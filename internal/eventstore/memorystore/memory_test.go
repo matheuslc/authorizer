@@ -1,4 +1,4 @@
-package eventstore
+package memorystore
 
 import (
 	"sync"
@@ -6,11 +6,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	es "github.com/matheuslc/authorizer/internal/eventstore"
 )
 
 func TestAppend(t *testing.T) {
 	namespace := "fake_name"
-	inMemoryStorage := NewStorage(namespace)
+	MemoryStore := NewStorage(namespace)
 	timeRange := []time.Time{}
 	middleTime := time.Date(2019, 12, 13, 12, 0, 0, 0, time.UTC)
 
@@ -24,12 +25,12 @@ func TestAppend(t *testing.T) {
 
 	for index, date := range timeRange {
 		uuid, _ := uuid.NewUUID()
-		fakeEvent := Event{ID: uuid, Timestamp: date, Name: uuid.String(), Payload: index}
+		fakeEvent := es.Event{ID: uuid, Timestamp: date, Name: uuid.String(), Payload: index}
 
-		inMemoryStorage.Append(fakeEvent)
+		MemoryStore.Append(fakeEvent)
 	}
 
-	storageFinalState, _ := inMemoryStorage.Get()
+	storageFinalState := MemoryStore.Get()
 	expected := storageFinalState[2].Timestamp.Equal(middleTime)
 
 	if expected == false {
@@ -39,25 +40,25 @@ func TestAppend(t *testing.T) {
 
 func TestAppendConcurrent(t *testing.T) {
 	namespace := "fake_name"
-	inMemoryStorage := NewStorage(namespace)
+	MemoryStore := NewStorage(namespace)
 	var wg sync.WaitGroup
 
 	wg.Add(100)
 	for i := 0; i < 100; i++ {
-		go appendAndMarkAsDone(&inMemoryStorage, &wg)
+		go appendAndMarkAsDone(&MemoryStore, &wg)
 	}
 	wg.Wait()
 
-	items, _ := inMemoryStorage.Get()
+	items := MemoryStore.Get()
 
 	if len(items) != 100 {
 		t.Errorf("Expected 100 items to be appended into the storage.")
 	}
 }
 
-func appendAndMarkAsDone(db *InMemoryStorage, wg *sync.WaitGroup) {
+func appendAndMarkAsDone(db *MemoryStore, wg *sync.WaitGroup) {
 	uuid, _ := uuid.NewUUID()
-	fakeEvent := Event{ID: uuid, Timestamp: time.Now(), Name: "lorem:ipsum", Payload: 10}
+	fakeEvent := es.Event{ID: uuid, Timestamp: time.Now(), Name: "lorem:ipsum", Payload: 10}
 	db.Append(fakeEvent)
 	wg.Done()
 }

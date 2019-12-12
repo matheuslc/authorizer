@@ -4,16 +4,17 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/matheuslc/authorizer/internal/eventstore"
+	es "github.com/matheuslc/authorizer/internal/eventstore"
+	ms "github.com/matheuslc/authorizer/internal/eventstore/memorystore"
 )
 
 // AccountRepository handle all writes on the account event store
 type AccountRepository struct {
-	db *eventstore.InMemoryStorage
+	db *ms.MemoryStore
 }
 
 // New returns a new instance of AccountRepository
-func New(db *eventstore.InMemoryStorage) AccountRepository {
+func New(db *ms.MemoryStore) AccountRepository {
 	return AccountRepository{db: db}
 }
 
@@ -26,7 +27,7 @@ func (ar *AccountRepository) CreateAccount(ac Account) bool {
 
 	uuid, _ := uuid.NewUUID()
 	time := time.Now()
-	event := eventstore.Event{ID: uuid, Timestamp: time, Name: AccountCreated, Payload: ac}
+	event := es.Event{ID: uuid, Timestamp: time, Name: AccountCreated, Payload: ac}
 
 	ar.db.Append(event)
 	return true

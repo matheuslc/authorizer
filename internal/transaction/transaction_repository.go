@@ -9,11 +9,11 @@ import (
 
 // TransactionRepository handle all writes on the account event store
 type TransactionRepository struct {
-	db *eventstore.InMemoryStorage
+	db *eventstore.MemoryStore
 }
 
 // New returns a new instance of TransactionRepository
-func New(db *eventstore.InMemoryStorage) TransactionRepository {
+func New(db *eventstore.MemoryStore) TransactionRepository {
 	return TransactionRepository{db: db}
 }
 

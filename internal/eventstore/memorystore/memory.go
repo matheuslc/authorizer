@@ -1,42 +1,26 @@
-package eventstore
+package memorystore
 
 import (
+	es "github.com/matheuslc/authorizer/internal/eventstore"
 	"sort"
 	"sync"
-	"time"
-
-	"github.com/google/uuid"
 )
 
-// Event defines an event wrapper. Its payload contains the specific event
-type Event struct {
-	ID        uuid.UUID
-	Timestamp time.Time
-	Name      string
-	Payload   interface{}
-}
-
-// EventStore interface defines what an EventStore needs
-type EventStore interface {
-	Append(event Event)
-	Get() []Event
-}
-
-// InMemoryStorage defines how a storage is
-type InMemoryStorage struct {
+// MemoryStore defines how a storage is
+type MemoryStore struct {
 	sync.RWMutex
 	Namespace string
-	Data      map[string][]Event
+	Data      map[string][]es.Event
 }
 
 // NewStorage is a factory to create a new storage
-func NewStorage(namespace string) InMemoryStorage {
-	data := make(map[string][]Event)
-	return InMemoryStorage{Namespace: namespace, Data: data}
+func NewStorage(namespace string) MemoryStore {
+	data := make(map[string][]es.Event)
+	return MemoryStore{Namespace: namespace, Data: data}
 }
 
 // Append a new event into the EventStore
-func (db *InMemoryStorage) Append(event Event) {
+func (db *MemoryStore) Append(event es.Event) es.Event {
 	db.Lock()
 	defer db.Unlock()
 
@@ -45,18 +29,19 @@ func (db *InMemoryStorage) Append(event Event) {
 
 	db.Data[db.Namespace] = newHistory
 	db.sort()
+	return event
 }
 
 // Get the key value from storage
-func (db *InMemoryStorage) Get() ([]Event, bool) {
+func (db *MemoryStore) Get() []es.Event {
 	db.Lock()
 	defer db.Unlock()
 
-	value, ok := db.Data[db.Namespace]
-	return value, ok
+	value := db.Data[db.Namespace]
+	return value
 }
 
-func (db *InMemoryStorage) sort() {
+func (db *MemoryStore) sort() {
 	sort.Slice(db.Data[db.Namespace], func(i, j int) bool {
 		return db.Data[db.Namespace][i].Timestamp.Before(db.Data[db.Namespace][j].Timestamp)
 	})
@@ -65,8 +50,8 @@ func (db *InMemoryStorage) sort() {
 // Iter over the items in a concurrent map
 // Each item is sent over a channel, so that
 // we can iterate over the map using the builtin range keyword locking the resource
-func (db *InMemoryStorage) Iter() <-chan Event {
-	c := make(chan Event)
+func (db *MemoryStore) Iter() <-chan es.Event {
+	c := make(chan es.Event)
 
 	f := func() {
 		db.Lock()

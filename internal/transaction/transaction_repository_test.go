@@ -14,12 +14,12 @@ func TesteAppendTransaction(t *testing.T) {
 
 	transaction := Transaction{ID: uuid, Merchant: "Carmels Store", Amount: 10, time: time.Now()}
 	namespace := "fake_name"
-	inMemoryStorage := eventstore.NewStorage(namespace)
+	MemoryStore := eventstore.NewStorage(namespace)
 
-	transactionRepository := New(&inMemoryStorage)
+	transactionRepository := New(&MemoryStore)
 	transactionRepository.Append(transaction)
 
-	events, ok := inMemoryStorage.Get()
+	events, ok := MemoryStore.Get()
 
 	if ok == false {
 		t.Errorf("Event out of order was inserted sorted")
@@ -32,8 +32,8 @@ func TesteAppendTransaction(t *testing.T) {
 
 func TestAppendConcurrent(t *testing.T) {
 	namespace := "fake_name"
-	inMemoryStorage := eventstore.NewStorage(namespace)
-	transactionRepository := New(&inMemoryStorage)
+	MemoryStore := eventstore.NewStorage(namespace)
+	transactionRepository := New(&MemoryStore)
 
 	var wg sync.WaitGroup
 
@@ -43,7 +43,7 @@ func TestAppendConcurrent(t *testing.T) {
 	}
 	wg.Wait()
 
-	items, _ := inMemoryStorage.Get()
+	items, _ := MemoryStore.Get()
 
 	if len(items) != 100 {
 		t.Errorf("Concurrent try to insert a new transaction.")
