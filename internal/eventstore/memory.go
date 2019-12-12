@@ -61,3 +61,23 @@ func (db *InMemoryStorage) sort() {
 		return db.Data[db.Namespace][i].Timestamp.Before(db.Data[db.Namespace][j].Timestamp)
 	})
 }
+
+// Iter over the items in a concurrent map
+// Each item is sent over a channel, so that
+// we can iterate over the map using the builtin range keyword locking the resource
+func (db *InMemoryStorage) Iter() <-chan Event {
+	c := make(chan Event)
+
+	f := func() {
+		db.Lock()
+		defer db.Unlock()
+
+		for _, event := range db.Data[db.Namespace] {
+			c <- event
+		}
+		close(c)
+	}
+	go f()
+
+	return c
+}
