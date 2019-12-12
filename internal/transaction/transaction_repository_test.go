@@ -1,4 +1,4 @@
-package transaction
+package transactionentity
 
 import (
 	"sync"
@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/matheuslc/authorizer/internal/eventstore"
+	ms "github.com/matheuslc/authorizer/internal/eventstore/memorystore"
 )
 
 func TesteAppendTransaction(t *testing.T) {
@@ -14,16 +14,12 @@ func TesteAppendTransaction(t *testing.T) {
 
 	transaction := Transaction{ID: uuid, Merchant: "Carmels Store", Amount: 10, time: time.Now()}
 	namespace := "fake_name"
-	MemoryStore := eventstore.NewStorage(namespace)
+	memoryStore := ms.NewStorage(namespace)
 
-	transactionRepository := New(&MemoryStore)
+	transactionRepository := New(&memoryStore)
 	transactionRepository.Append(transaction)
 
-	events, ok := MemoryStore.Get()
-
-	if ok == false {
-		t.Errorf("Event out of order was inserted sorted")
-	}
+	events := memoryStore.Get()
 
 	if events[0].Payload.(Transaction).ID != uuid {
 		t.Errorf("Event out of order was inserted sorted")
@@ -32,8 +28,8 @@ func TesteAppendTransaction(t *testing.T) {
 
 func TestAppendConcurrent(t *testing.T) {
 	namespace := "fake_name"
-	MemoryStore := eventstore.NewStorage(namespace)
-	transactionRepository := New(&MemoryStore)
+	memoryStore := ms.NewStorage(namespace)
+	transactionRepository := New(&memoryStore)
 
 	var wg sync.WaitGroup
 
@@ -43,7 +39,7 @@ func TestAppendConcurrent(t *testing.T) {
 	}
 	wg.Wait()
 
-	items, _ := MemoryStore.Get()
+	items := memoryStore.Get()
 
 	if len(items) != 100 {
 		t.Errorf("Concurrent try to insert a new transaction.")
