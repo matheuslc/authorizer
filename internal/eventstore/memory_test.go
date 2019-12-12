@@ -33,7 +33,7 @@ func TestAppend(t *testing.T) {
 	expected := storageFinalState[2].Timestamp.Equal(middleTime)
 
 	if expected == false {
-		t.Errorf("Expected 100 items to be appended into the storage.")
+		t.Errorf("Event out of order was inserted sorted")
 	}
 }
 
