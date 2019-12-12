@@ -1,9 +1,11 @@
 package memorystore
 
 import (
-	es "github.com/matheuslc/authorizer/internal/eventstore"
 	"sort"
 	"sync"
+	"time"
+
+	es "github.com/matheuslc/authorizer/internal/eventstore"
 )
 
 // MemoryStore defines how a storage is
@@ -27,8 +29,8 @@ func (db *MemoryStore) Append(event es.Event) es.Event {
 	currentHistory := db.Data[db.Namespace]
 	newHistory := append(currentHistory, event)
 
-	db.Data[db.Namespace] = newHistory
-	db.sort()
+	db.Data[db.Namespace] = db.sort(newHistory)
+
 	return event
 }
 
@@ -41,10 +43,12 @@ func (db *MemoryStore) Get() []es.Event {
 	return value
 }
 
-func (db *MemoryStore) sort() {
-	sort.Slice(db.Data[db.Namespace], func(i, j int) bool {
-		return db.Data[db.Namespace][i].Timestamp.Before(db.Data[db.Namespace][j].Timestamp)
+func (db *MemoryStore) sort(data []es.Event) []es.Event {
+	sort.Slice(data, func(i, j int) bool {
+		return data[i].Timestamp.Before(db.Data[db.Namespace][j].Timestamp)
 	})
+
+	return data
 }
 
 // Iter over the items in a concurrent map
@@ -65,4 +69,21 @@ func (db *MemoryStore) Iter() <-chan es.Event {
 	go f()
 
 	return c
+}
+
+// EventsAfter collects an amount of data
+func (db *MemoryStore) EventsAfter(after time.Time) []es.Event {
+	db.Lock()
+	defer db.Unlock()
+
+	data := db.Data[db.Namespace]
+	filteredEvents := []es.Event{}
+
+	for _, event := range data {
+		if event.Timestamp.After(after) || event.Timestamp.Equal(after) {
+			filteredEvents = append(filteredEvents, event)
+		}
+	}
+
+	return filteredEvents
 }

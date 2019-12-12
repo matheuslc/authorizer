@@ -1,6 +1,7 @@
 package memorystore
 
 import (
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -35,6 +36,39 @@ func TestAppend(t *testing.T) {
 
 	if expected == false {
 		t.Errorf("Event out of order was inserted sorted")
+	}
+}
+
+func TestEventsAfter(t *testing.T) {
+	namespace := "fake_name"
+	memoryStore := NewStorage(namespace)
+
+	timeRange := []time.Time{}
+	middleTime := time.Date(2019, 12, 13, 12, 0, 0, 0, time.UTC)
+	timeRange = append(
+		timeRange,
+		time.Date(2019, 12, 11, 12, 0, 0, 0, time.UTC),
+		time.Date(2019, 12, 12, 12, 0, 0, 0, time.UTC),
+		time.Date(2019, 12, 13, 12, 0, 0, 0, time.UTC),
+		time.Date(2019, 12, 14, 12, 0, 0, 0, time.UTC),
+		time.Date(2019, 12, 15, 12, 0, 0, 0, time.UTC),
+		time.Date(2019, 12, 16, 12, 0, 0, 0, time.UTC),
+		time.Date(2019, 12, 16, 12, 0, 0, 0, time.UTC),
+		time.Date(2019, 12, 17, 12, 0, 0, 0, time.UTC),
+		time.Date(2019, 12, 18, 12, 0, 0, 0, time.UTC),
+	)
+
+	for index, date := range timeRange {
+		uuid, _ := uuid.NewUUID()
+		fakeEvent := es.Event{ID: uuid, Timestamp: date, Name: strconv.Itoa(index), Payload: index}
+
+		memoryStore.Append(fakeEvent)
+	}
+
+	items := memoryStore.EventsAfter(middleTime)
+
+	if len(items) != 7 {
+		t.Errorf("InterAfter doest not only returned events after the Time.")
 	}
 }
 
