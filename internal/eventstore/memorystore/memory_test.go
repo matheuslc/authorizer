@@ -39,7 +39,7 @@ func TestAppend(t *testing.T) {
 	}
 }
 
-func TestEventsAfter(t *testing.T) {
+func TestIterAfter(t *testing.T) {
 	namespace := "fake_name"
 	memoryStore := NewStorage(namespace)
 
@@ -65,9 +65,14 @@ func TestEventsAfter(t *testing.T) {
 		memoryStore.Append(fakeEvent)
 	}
 
-	items := memoryStore.EventsAfter(middleTime)
+	items := memoryStore.IterAfter(middleTime)
 
-	if len(items) != 7 {
+	itemsFromChannel := []es.Event{}
+	for event := range items {
+		itemsFromChannel = append(itemsFromChannel, event)
+	}
+
+	if len(itemsFromChannel) != 7 {
 		t.Errorf("InterAfter doest not only returned events after the Time.")
 	}
 }
