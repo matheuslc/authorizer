@@ -77,3 +77,12 @@ func AccountNotInitilizedViolation(tv TransactionValidation) (string, bool) {
 
 	return "", false
 }
+
+// AccountActiveCardViolation checks if the account have an ActiveCard
+func AccountActiveCardViolation(tv TransactionValidation) (string, bool) {
+	if tv.User.ActiveCard {
+		return "", false
+	}
+
+	return "card-not-active", true
+}
