@@ -33,6 +33,18 @@ func (ar *AccountRepository) CreateAccount(ac Account) bool {
 	return true
 }
 
+// CurrentAccount
+func (ar *AccountRepository) CurrentAccount(ac Account) Account {
+	c := ar.db.EventsByName("account:created")
+	account := Account{}
+
+	for event := range c {
+		account = event.Payload.(Account)
+	}
+
+	return account
+}
+
 // AccountAlreadyExists checks if an account already was initialized
 func (ar *AccountRepository) AccountAlreadyExists() bool {
 	c := ar.db.Iter()
