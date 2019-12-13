@@ -21,8 +21,8 @@ func TestMoreThanAllowedViolation(t *testing.T) {
 	tv := TransactionValidation{User: user, TransactionEvents: events, CurrentEvent: event}
 	violations := MoreThanAllowedViolation(tv)
 
-	if !violations {
-		t.Error("More than allowed violation failed with a bucket of four events")
+	if violations {
+		t.Error("Violation failed, expected: true. got: false")
 	}
 }
 
@@ -36,7 +36,7 @@ func TestMoreThanAllowedViolationSuccess(t *testing.T) {
 	violations := MoreThanAllowedViolation(tv)
 
 	if violations {
-		t.Error("More than allowed violation failed with a bucket of four events")
+		t.Error("Violation failerd, expected false, got true")
 	}
 }
 
@@ -50,7 +50,7 @@ func TestDuplicatedTransaction(t *testing.T) {
 	_, ok := DuplicatedTransaction(tv)
 
 	if !ok {
-		t.Error("More than allowed violation failed with a bucket of four events")
+		t.Error("Violation failed, expected to detect duplicae transaction.")
 	}
 }
 
@@ -68,11 +68,11 @@ func TestConcurrent(t *testing.T) {
 	_, ok := DuplicatedTransaction(tv2)
 
 	if !value {
-		t.Error("More than allowed violation failed with a bucket of four events")
+		t.Error("MoreThanAllowedViolation failed running concurrent")
 	}
 
 	if !ok {
-		t.Error("More than allowed violation failed with a bucket of four events")
+		t.Error("DuplicatedTransaction failed running concurrent")
 	}
 }
 
@@ -87,7 +87,7 @@ func TestAccountLimitViolation(t *testing.T) {
 	_, ok := AccountLimitViolation(tv)
 
 	if !ok {
-		t.Error("More than allowed violation failed with a bucket of four events")
+		t.Error("Violation failed, user without limit was not catched")
 	}
 }
 
@@ -101,7 +101,7 @@ func TestAccountNotInitialized(t *testing.T) {
 	_, ok := AccountNotInitilizedViolation(tv)
 
 	if !ok {
-		t.Error("More than allowed violation failed with a bucket of four events")
+		t.Error("Violation failerd, empty account was not catched")
 	}
 }
 
@@ -120,13 +120,8 @@ func generateEvents(amount int) <-chan es.Event {
 	go func() {
 		defer close(c)
 
-		uuid, _ := uuid.NewUUID()
-		time := time.Now()
-		transaction := Transaction{ID: uuid, Merchant: "carmel-restaurant", Amount: 100, time: time}
-		event := es.Event{ID: uuid, Timestamp: time, Name: TransactionValidated, Payload: transaction}
-
 		for i := 0; i < amount; i++ {
-			c <- event
+			c <- genEvent()
 		}
 	}()
 

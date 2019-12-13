@@ -10,13 +10,14 @@ const (
 	AllowedAmountOfTransaction = 3
 )
 
+// TransactionValidation
 type TransactionValidation struct {
 	User              ac.Account
 	TransactionEvents <-chan es.Event
 	CurrentEvent      es.Event
 }
 
-// AmountOfTransactions
+// MoreThanAllowedViolation checks if the account made more transactions than the allowed
 func MoreThanAllowedViolation(tv TransactionValidation) bool {
 	occurrences := []es.Event{}
 	for event := range tv.TransactionEvents {
@@ -30,7 +31,7 @@ func MoreThanAllowedViolation(tv TransactionValidation) bool {
 	return false
 }
 
-// DuplicatedTransaction
+// DuplicatedTransaction checks for duplicate transactions
 func DuplicatedTransaction(tv TransactionValidation) (string, bool) {
 	occurrences := []es.Event{}
 
@@ -43,14 +44,15 @@ func DuplicatedTransaction(tv TransactionValidation) (string, bool) {
 		}
 	}
 
-	if len(occurrences) > 1 {
+	if len(occurrences) > 0 {
 		return "doubled-transaction", true
 	}
 
 	return "", false
 }
 
-// AccountLimitViolation
+// AccountLimitViolation checks if the account have limit to continue with
+// its current transaction
 func AccountLimitViolation(tv TransactionValidation) (string, bool) {
 	balance := tv.User.AvailableLimit
 
@@ -65,7 +67,8 @@ func AccountLimitViolation(tv TransactionValidation) (string, bool) {
 	return "", false
 }
 
-// AccountLimitViolation
+// AccountNotInitilizedViolation checks if an account was previously initialized.
+// If not, the function will return false and "account-not-initialized"
 func AccountNotInitilizedViolation(tv TransactionValidation) (string, bool) {
 	nulla := ac.Account{}
 	if tv.User == nulla {
