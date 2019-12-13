@@ -10,12 +10,12 @@ import (
 
 // AccountRepository handle all writes on the account event store
 type AccountRepository struct {
-	db *ms.MemoryStore
+	DB *ms.MemoryStore
 }
 
 // New returns a new instance of AccountRepository
 func New(db *ms.MemoryStore) AccountRepository {
-	return AccountRepository{db: db}
+	return AccountRepository{DB: db}
 }
 
 // CreateAccount a new event into the EventStore
@@ -29,13 +29,13 @@ func (ar *AccountRepository) CreateAccount(ac Account) bool {
 	time := time.Now()
 	event := es.Event{ID: uuid, Timestamp: time, Name: AccountCreated, Payload: ac}
 
-	ar.db.Append(event)
+	ar.DB.Append(event)
 	return true
 }
 
 // CurrentAccount
-func (ar *AccountRepository) CurrentAccount(ac Account) Account {
-	c := ar.db.EventsByName("account:created")
+func (ar *AccountRepository) CurrentAccount() Account {
+	c := ar.DB.EventsByName("account:created")
 	account := Account{}
 
 	for event := range c {
@@ -47,7 +47,7 @@ func (ar *AccountRepository) CurrentAccount(ac Account) Account {
 
 // AccountAlreadyExists checks if an account already was initialized
 func (ar *AccountRepository) AccountAlreadyExists() bool {
-	c := ar.db.Iter()
+	c := ar.DB.Iter()
 
 	for event := range c {
 		if event.Name == AccountCreated {

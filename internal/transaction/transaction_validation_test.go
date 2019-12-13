@@ -19,9 +19,9 @@ func TestMoreThanAllowedViolation(t *testing.T) {
 	event := es.Event{ID: uuid, Timestamp: time, Name: TransactionValidated, Payload: transaction}
 
 	tv := TransactionValidation{User: user, TransactionEvents: events, CurrentEvent: event}
-	violations := MoreThanAllowedViolation(tv)
+	_, violations := MoreThanAllowedViolation(tv)
 
-	if violations {
+	if !violations {
 		t.Error("Violation failed, expected: true. got: false")
 	}
 }
@@ -33,7 +33,7 @@ func TestMoreThanAllowedViolationSuccess(t *testing.T) {
 	user := ac.Account{ID: uuid, ActiveCard: true, AvailableLimit: 100}
 
 	tv := TransactionValidation{User: user, TransactionEvents: events, CurrentEvent: event}
-	violations := MoreThanAllowedViolation(tv)
+	_, violations := MoreThanAllowedViolation(tv)
 
 	if violations {
 		t.Error("Violation failerd, expected false, got true")
@@ -64,7 +64,7 @@ func TestConcurrent(t *testing.T) {
 	tv := TransactionValidation{User: user, TransactionEvents: events, CurrentEvent: firstEvent}
 	tv2 := TransactionValidation{User: user, TransactionEvents: secondEvents, CurrentEvent: firstEvent}
 
-	value := MoreThanAllowedViolation(tv)
+	_, value := MoreThanAllowedViolation(tv)
 	_, ok := DuplicatedTransaction(tv2)
 
 	if !value {
@@ -127,16 +127,12 @@ func genEvent() es.Event {
 	return event
 }
 
-func generateEvents(amount int) <-chan es.Event {
-	c := make(chan es.Event)
+func generateEvents(amount int) []es.Event {
+	events := []es.Event{}
 
-	go func() {
-		defer close(c)
+	for index := 0; index < amount; index++ {
+		events = append(events, genEvent())
+	}
 
-		for i := 0; i < amount; i++ {
-			c <- genEvent()
-		}
-	}()
-
-	return c
+	return events
 }

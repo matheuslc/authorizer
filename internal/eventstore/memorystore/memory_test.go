@@ -12,7 +12,7 @@ import (
 
 func TestAppend(t *testing.T) {
 	namespace := "fake_name"
-	MemoryStore := NewStorage(namespace)
+	memoryStore := NewStorage(namespace)
 	timeRange := []time.Time{}
 	middleTime := time.Date(2019, 12, 13, 12, 0, 0, 0, time.UTC)
 
@@ -28,10 +28,10 @@ func TestAppend(t *testing.T) {
 		uuid, _ := uuid.NewUUID()
 		fakeEvent := es.Event{ID: uuid, Timestamp: date, Name: uuid.String(), Payload: index}
 
-		MemoryStore.Append(fakeEvent)
+		memoryStore.Append(fakeEvent)
 	}
 
-	storageFinalState := MemoryStore.Get()
+	storageFinalState := memoryStore.Get()
 	expected := storageFinalState[2].Timestamp.Equal(middleTime)
 
 	if expected == false {

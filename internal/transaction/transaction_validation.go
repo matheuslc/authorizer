@@ -13,29 +13,29 @@ const (
 // TransactionValidation
 type TransactionValidation struct {
 	User              ac.Account
-	TransactionEvents <-chan es.Event
+	TransactionEvents []es.Event
 	CurrentEvent      es.Event
 }
 
 // MoreThanAllowedViolation checks if the account made more transactions than the allowed
-func MoreThanAllowedViolation(tv TransactionValidation) bool {
+func MoreThanAllowedViolation(tv TransactionValidation) (string, bool) {
 	occurrences := []es.Event{}
-	for event := range tv.TransactionEvents {
+	for _, event := range tv.TransactionEvents {
 		occurrences = append(occurrences, event)
 	}
 
-	if len(occurrences) > AllowedAmountOfTransaction {
-		return true
+	if len(occurrences) >= AllowedAmountOfTransaction {
+		return "high-frequency-small-interval", true
 	}
 
-	return false
+	return "", false
 }
 
 // DuplicatedTransaction checks for duplicate transactions
 func DuplicatedTransaction(tv TransactionValidation) (string, bool) {
 	occurrences := []es.Event{}
 
-	for event := range tv.TransactionEvents {
+	for _, event := range tv.TransactionEvents {
 		sameMerchant := event.Payload.(Transaction).Merchant == tv.CurrentEvent.Payload.(Transaction).Merchant
 		sameAmount := event.Payload.(Transaction).Amount == tv.CurrentEvent.Payload.(Transaction).Amount
 
@@ -55,12 +55,16 @@ func DuplicatedTransaction(tv TransactionValidation) (string, bool) {
 // its current transaction
 func AccountLimitViolation(tv TransactionValidation) (string, bool) {
 	balance := tv.User.AvailableLimit
+	events := []es.Event{}
 
-	for event := range tv.TransactionEvents {
+	for _, event := range tv.TransactionEvents {
+		events = append(events, event)
 		balance += event.Payload.(Transaction).Amount
 	}
 
-	if tv.CurrentEvent.Payload.(Transaction).Amount < balance {
+	amount := tv.CurrentEvent.Payload.(Transaction).Amount
+
+	if amount > balance {
 		return "insufficient-limit", true
 	}
 
