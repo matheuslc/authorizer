@@ -79,18 +79,19 @@ func TestIterAfter(t *testing.T) {
 
 func TestAppendConcurrent(t *testing.T) {
 	namespace := "fake_name"
-	MemoryStore := NewStorage(namespace)
+	memoryStore := NewStorage(namespace)
+	times := 50
 	var wg sync.WaitGroup
 
-	wg.Add(100)
-	for i := 0; i < 100; i++ {
-		go appendAndMarkAsDone(&MemoryStore, &wg)
+	wg.Add(times)
+	for i := 0; i < times; i++ {
+		go appendAndMarkAsDone(&memoryStore, &wg)
 	}
 	wg.Wait()
 
-	items := MemoryStore.Get()
+	items := <-memoryStore.GetByChannel()
 
-	if len(items) != 100 {
+	if len(items) != times {
 		t.Errorf("Expected 100 items to be appended into the storage.")
 	}
 }

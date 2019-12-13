@@ -43,6 +43,23 @@ func (db *MemoryStore) Get() []es.Event {
 	return value
 }
 
+// GetByChannel
+func (db *MemoryStore) GetByChannel() <-chan []es.Event {
+	c := make(chan []es.Event)
+
+	f := func() {
+		db.Lock()
+		defer db.Unlock()
+
+		c <- db.Data[db.Namespace]
+		close(c)
+	}
+
+	go f()
+
+	return c
+}
+
 func (db *MemoryStore) sort() {
 	sort.Slice(db.Data[db.Namespace], func(i, j int) bool {
 		return db.Data[db.Namespace][i].Timestamp.Before(db.Data[db.Namespace][j].Timestamp)
@@ -85,5 +102,24 @@ func (db *MemoryStore) IterAfter(after time.Time) <-chan es.Event {
 	}
 	go f()
 
+	return c
+}
+
+// CountEventsByName
+func (db *MemoryStore) EventsByName(name string) <-chan es.Event {
+	c := make(chan es.Event)
+	data := db.Iter()
+
+	f := func() {
+		for event := range data {
+			if event.Name == name {
+				c <- event
+			}
+		}
+
+		close(c)
+	}
+
+	go f()
 	return c
 }
