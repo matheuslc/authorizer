@@ -7,7 +7,7 @@ const (
 	Empty          = ""
 )
 
-// Violations defiens how an account validation have to be
+// Violations describes an Account violations structure to be validated
 type Violations struct {
 	Account Account
 }

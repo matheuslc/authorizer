@@ -18,7 +18,7 @@ func TestMoreThanAllowedViolation(t *testing.T) {
 	transaction := Transaction{ID: uuid, Merchant: "carmel-restaurant", Amount: 100, time: time}
 	event := es.Event{ID: uuid, Timestamp: time, Name: TransactionValidated, Payload: transaction}
 
-	tv := TransactionValidation{User: user, TransactionEvents: events, CurrentEvent: event}
+	tv := Violations{User: user, TransactionEvents: events, CurrentEvent: event}
 	_, violations := MoreThanAllowedViolation(tv)
 
 	if !violations {
@@ -32,7 +32,7 @@ func TestMoreThanAllowedViolationSuccess(t *testing.T) {
 	uuid, _ := uuid.NewUUID()
 	user := ac.Account{ID: uuid, ActiveCard: true, AvailableLimit: 100}
 
-	tv := TransactionValidation{User: user, TransactionEvents: events, CurrentEvent: event}
+	tv := Violations{User: user, TransactionEvents: events, CurrentEvent: event}
 	_, violations := MoreThanAllowedViolation(tv)
 
 	if violations {
@@ -46,7 +46,7 @@ func TestDuplicatedTransaction(t *testing.T) {
 	uuid, _ := uuid.NewUUID()
 	user := ac.Account{ID: uuid, ActiveCard: true, AvailableLimit: 100}
 
-	tv := TransactionValidation{User: user, TransactionEvents: events, CurrentEvent: event}
+	tv := Violations{User: user, TransactionEvents: events, CurrentEvent: event}
 	_, ok := DuplicatedTransaction(tv)
 
 	if !ok {
@@ -61,8 +61,8 @@ func TestConcurrent(t *testing.T) {
 	uuid, _ := uuid.NewUUID()
 	user := ac.Account{ID: uuid, ActiveCard: true, AvailableLimit: 100}
 
-	tv := TransactionValidation{User: user, TransactionEvents: events, CurrentEvent: firstEvent}
-	tv2 := TransactionValidation{User: user, TransactionEvents: secondEvents, CurrentEvent: firstEvent}
+	tv := Violations{User: user, TransactionEvents: events, CurrentEvent: firstEvent}
+	tv2 := Violations{User: user, TransactionEvents: secondEvents, CurrentEvent: firstEvent}
 
 	_, value := MoreThanAllowedViolation(tv)
 	_, ok := DuplicatedTransaction(tv2)
@@ -82,7 +82,7 @@ func TestAccountLimitViolation(t *testing.T) {
 	uuid, _ := uuid.NewUUID()
 	user := ac.Account{ID: uuid, ActiveCard: true, AvailableLimit: 600}
 
-	tv := TransactionValidation{User: user, TransactionEvents: events, CurrentEvent: firstEvent}
+	tv := Violations{User: user, TransactionEvents: events, CurrentEvent: firstEvent}
 
 	_, ok := AccountLimitViolation(tv)
 

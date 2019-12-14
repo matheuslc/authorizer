@@ -24,7 +24,7 @@ func (uc *AuthorizeTransactionUseCase) Execute() []string {
 	events := uc.tr.IterAfter(past)
 
 	event := es.Event{Name: TransactionValidated, Payload: uc.t}
-	tv := TransactionValidation{User: account, TransactionEvents: events, CurrentEvent: event}
+	tv := Violations{User: account, TransactionEvents: events, CurrentEvent: event}
 
 	violations := []string{}
 
