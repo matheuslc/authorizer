@@ -70,23 +70,3 @@ func AccountLimitViolation(tv TransactionValidation) (string, bool) {
 
 	return "", false
 }
-
-// AccountNotInitilizedViolation checks if an account was previously initialized.
-// If not, the function will return false and "account-not-initialized"
-func AccountNotInitilizedViolation(tv TransactionValidation) (string, bool) {
-	nulla := ac.Account{}
-	if tv.User == nulla {
-		return "account-not-initialized", true
-	}
-
-	return "", false
-}
-
-// AccountActiveCardViolation checks if the account have an ActiveCard
-func AccountActiveCardViolation(tv TransactionValidation) (string, bool) {
-	if tv.User.ActiveCard {
-		return "", false
-	}
-
-	return "card-not-active", true
-}

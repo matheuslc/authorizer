@@ -7,7 +7,7 @@ import (
 	"github.com/matheuslc/authorizer/internal/eventstore/memorystore"
 )
 
-func TestAuthorizeTransactionUseCase(t *testing.T) {
+func TestAuthorizeAccountAccountViolation(t *testing.T) {
 	acStore := memorystore.NewStorage("account")
 	tStore := memorystore.NewStorage("transaction")
 	acRepository := account.AccountRepository{DB: &acStore}
@@ -26,7 +26,7 @@ func TestAuthorizeTransactionUseCase(t *testing.T) {
 	useCase := AuthorizeTransactionUseCase{ur: acRepository, tr: tRepository, t: tr4}
 	violations := useCase.Execute()
 
-	if len(violations) == 1 {
+	if len(violations) == 2 {
 		t.Errorf("lorem")
 	}
 }

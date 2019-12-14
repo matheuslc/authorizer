@@ -91,33 +91,6 @@ func TestAccountLimitViolation(t *testing.T) {
 	}
 }
 
-func TestAccountNotInitialized(t *testing.T) {
-	events := generateEvents(2)
-	firstEvent := genEvent()
-	user := ac.Account{}
-
-	tv := TransactionValidation{User: user, TransactionEvents: events, CurrentEvent: firstEvent}
-	_, ok := AccountNotInitilizedViolation(tv)
-
-	if !ok {
-		t.Error("Violation failerd, empty account was not catched")
-	}
-}
-
-func TestAccountActiveCardViolation(t *testing.T) {
-	events := generateEvents(2)
-	firstEvent := genEvent()
-
-	user := ac.Account{ActiveCard: false, AvailableLimit: 100}
-
-	tv := TransactionValidation{User: user, TransactionEvents: events, CurrentEvent: firstEvent}
-	_, ok := AccountActiveCardViolation(tv)
-
-	if !ok {
-		t.Error("Violation failed, non ActiveCard was not catched")
-	}
-}
-
 func genEvent() es.Event {
 	uuid, _ := uuid.NewUUID()
 	time := time.Now()
