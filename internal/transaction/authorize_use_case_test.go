@@ -10,8 +10,8 @@ import (
 func TestAuthorizeAccountAccountViolation(t *testing.T) {
 	acStore := memorystore.NewStorage("account")
 	tStore := memorystore.NewStorage("transaction")
-	acRepository := account.AccountRepository{DB: &acStore}
-	tRepository := TransactionRepository{DB: &tStore}
+	acRepository := account.Repository{DB: &acStore}
+	tRepository := Repository{DB: &tStore}
 
 	tr := Transaction{Merchant: "nuevo-store", Amount: 200}
 	tr2 := Transaction{Merchant: "anonther-store", Amount: 20}
@@ -23,7 +23,7 @@ func TestAuthorizeAccountAccountViolation(t *testing.T) {
 	tRepository.Append(tr3)
 	tRepository.Append(tr4)
 
-	useCase := AuthorizeTransactionUseCase{ur: acRepository, tr: tRepository, t: tr4}
+	useCase := AuthorizeUseCase{ur: acRepository, tr: tRepository, t: tr4}
 	violations := useCase.Execute()
 
 	if len(violations) == 2 {

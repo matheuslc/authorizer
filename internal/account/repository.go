@@ -8,18 +8,18 @@ import (
 	ms "github.com/matheuslc/authorizer/internal/eventstore/memorystore"
 )
 
-// AccountRepository handle all writes on the account event store
-type AccountRepository struct {
+// Repository handle all writes on the account event store
+type Repository struct {
 	DB *ms.MemoryStore
 }
 
-// New returns a new instance of AccountRepository
-func New(db *ms.MemoryStore) AccountRepository {
-	return AccountRepository{DB: db}
+// New returns a new instance of Repository
+func New(db *ms.MemoryStore) Repository {
+	return Repository{DB: db}
 }
 
 // CreateAccount a new event into the EventStore
-func (ar *AccountRepository) CreateAccount(ac Account) bool {
+func (ar *Repository) CreateAccount(ac Account) bool {
 	accountExists := ar.AccountAlreadyExists()
 	if accountExists {
 		return false
@@ -34,7 +34,7 @@ func (ar *AccountRepository) CreateAccount(ac Account) bool {
 }
 
 // CurrentAccount
-func (ar *AccountRepository) CurrentAccount() Account {
+func (ar *Repository) CurrentAccount() Account {
 	c := ar.DB.EventsByName("account:created")
 	account := Account{}
 
@@ -46,7 +46,7 @@ func (ar *AccountRepository) CurrentAccount() Account {
 }
 
 // AccountAlreadyExists checks if an account already was initialized
-func (ar *AccountRepository) AccountAlreadyExists() bool {
+func (ar *Repository) AccountAlreadyExists() bool {
 	c := ar.DB.Iter()
 
 	for event := range c {

@@ -16,8 +16,8 @@ func TesteAppendTransaction(t *testing.T) {
 	namespace := "fake_name"
 	memoryStore := ms.NewStorage(namespace)
 
-	transactionRepository := New(&memoryStore)
-	transactionRepository.Append(transaction)
+	Repository := New(&memoryStore)
+	Repository.Append(transaction)
 
 	events := memoryStore.Get()
 
@@ -29,13 +29,13 @@ func TesteAppendTransaction(t *testing.T) {
 func TestAppendConcurrent(t *testing.T) {
 	namespace := "fake_name"
 	memoryStore := ms.NewStorage(namespace)
-	transactionRepository := New(&memoryStore)
+	Repository := New(&memoryStore)
 
 	var wg sync.WaitGroup
 
 	wg.Add(100)
 	for i := 0; i < 100; i++ {
-		go appendAndMarkAsDone(&transactionRepository, &wg)
+		go appendAndMarkAsDone(&Repository, &wg)
 	}
 	wg.Wait()
 
@@ -46,7 +46,7 @@ func TestAppendConcurrent(t *testing.T) {
 	}
 }
 
-func appendAndMarkAsDone(tr *TransactionRepository, wg *sync.WaitGroup) {
+func appendAndMarkAsDone(tr *Repository, wg *sync.WaitGroup) {
 	uuid, _ := uuid.NewUUID()
 	transaction := Transaction{ID: uuid, Merchant: "Carmels Store", Amount: 10, time: time.Now()}
 

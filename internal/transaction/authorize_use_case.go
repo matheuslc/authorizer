@@ -7,15 +7,15 @@ import (
 	es "github.com/matheuslc/authorizer/internal/eventstore"
 )
 
-// AuthorizeTransactionUseCase
-type AuthorizeTransactionUseCase struct {
-	ur ac.AccountRepository
-	tr TransactionRepository
+// AuthorizeUseCase
+type AuthorizeUseCase struct {
+	ur ac.Repository
+	tr Repository
 	t  Transaction
 }
 
 // Execute
-func (uc *AuthorizeTransactionUseCase) Execute() []string {
+func (uc *AuthorizeUseCase) Execute() []string {
 	now := time.Now()
 	twoMinutes := time.Minute + time.Duration(2)
 	past := now.Add(-twoMinutes)
@@ -24,15 +24,18 @@ func (uc *AuthorizeTransactionUseCase) Execute() []string {
 	events := uc.tr.IterAfter(past)
 
 	event := es.Event{Name: TransactionValidated, Payload: uc.t}
-	tv := Violations{User: account, TransactionEvents: events, CurrentEvent: event}
+
+	acViolation := ac.Violations{Account: account}
+	trViolation := Violations{Account: account, TransactionEvents: events, CurrentEvent: event}
 
 	violations := []string{}
 
-	allowed, allowedStatus := MoreThanAllowedViolation(tv)
-	duplicated, duplicatedStatus := DuplicatedTransaction(tv)
-	limit, limitStatus := AccountLimitViolation(tv)
-	init, initStatus := AccountNotInitilizedViolation(tv)
-	active, activeStatus := AccountActiveCardViolation(tv)
+	init, initStatus := ac.NotInitilizedViolation(acViolation)
+	active, activeStatus := ac.ActiveCardViolation(acViolation)
+
+	allowed, allowedStatus := MoreThanAllowedViolation(trViolation)
+	duplicated, duplicatedStatus := DuplicatedTransaction(trViolation)
+	limit, limitStatus := AccountLimitViolation(trViolation)
 
 	if allowedStatus {
 		violations = append(violations, allowed)

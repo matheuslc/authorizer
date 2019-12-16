@@ -15,9 +15,9 @@ func TestCreateAccount(t *testing.T) {
 	namespace := "fake_name"
 	memoryStore := ms.NewStorage(namespace)
 
-	accountRepository := New(&memoryStore)
+	Repository := New(&memoryStore)
 
-	accountRepository.CreateAccount(account)
+	Repository.CreateAccount(account)
 
 	events := memoryStore.Get()
 
@@ -31,12 +31,12 @@ func TestCreateConcurrent(t *testing.T) {
 	namespace := "fake_name"
 	memoryStore := ms.NewStorage(namespace)
 
-	accountRepository := New(&memoryStore)
+	Repository := New(&memoryStore)
 	var wg sync.WaitGroup
 
 	wg.Add(times)
 	for i := 0; i < times; i++ {
-		go createAndMarkAsDone(&accountRepository, &wg)
+		go createAndMarkAsDone(&Repository, &wg)
 	}
 	wg.Wait()
 
@@ -47,7 +47,7 @@ func TestCreateConcurrent(t *testing.T) {
 	}
 }
 
-func createAndMarkAsDone(ar *AccountRepository, wg *sync.WaitGroup) {
+func createAndMarkAsDone(ar *Repository, wg *sync.WaitGroup) {
 	uuid, _ := uuid.NewUUID()
 	account := Account{ID: uuid, ActiveCard: true, AvailableLimit: 100}
 
