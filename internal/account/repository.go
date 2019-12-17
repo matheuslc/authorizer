@@ -26,11 +26,6 @@ func New(db *ms.MemoryStore) Repository {
 
 // CreateAccount a new event into the EventStore
 func (ar *Repository) CreateAccount(ac Account) bool {
-	accountExists := ar.accountAlreadyExists()
-	if accountExists {
-		return false
-	}
-
 	uuid, _ := uuid.NewUUID()
 	time := time.Now()
 	event := es.Event{ID: uuid, Timestamp: time, Name: AccountCreated, Payload: ac}
@@ -41,7 +36,7 @@ func (ar *Repository) CreateAccount(ac Account) bool {
 
 // CurrentAccount
 func (ar *Repository) CurrentAccount() Account {
-	c := ar.DB.EventsByName("account:created")
+	c := ar.DB.EventsByName(AccountCreated)
 	account := Account{}
 
 	for event := range c {
@@ -51,15 +46,14 @@ func (ar *Repository) CurrentAccount() Account {
 	return account
 }
 
-// AccountAlreadyExists checks if an account already was initialized
-func (ar *Repository) accountAlreadyExists() bool {
-	c := ar.DB.Iter()
+// Iter
+func (ar *Repository) Iter() []es.Event {
+	data := ar.DB.Iter()
+	ocur := []es.Event{}
 
-	for event := range c {
-		if event.Name == AccountCreated {
-			return true
-		}
+	for event := range data {
+		ocur = append(ocur, event)
 	}
 
-	return false
+	return ocur
 }
