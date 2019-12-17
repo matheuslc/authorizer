@@ -18,7 +18,7 @@ const (
 type Violations struct {
 	Account           ac.Account
 	TransactionEvents []es.Event
-	CurrentEvent      es.Event
+	TransactionIntent Transaction
 }
 
 // MoreThanAllowedViolation checks if the account made more transactions than the allowed
@@ -40,8 +40,8 @@ func DuplicatedTransaction(v Violations) (string, bool) {
 	occurrences := []es.Event{}
 
 	for _, event := range v.TransactionEvents {
-		sameMerchant := event.Payload.(Transaction).Merchant == v.CurrentEvent.Payload.(Transaction).Merchant
-		sameAmount := event.Payload.(Transaction).Amount == v.CurrentEvent.Payload.(Transaction).Amount
+		sameMerchant := event.Payload.(Transaction).Merchant == v.TransactionIntent.Merchant
+		sameAmount := event.Payload.(Transaction).Amount == v.TransactionIntent.Amount
 
 		if sameMerchant && sameAmount {
 			occurrences = append(occurrences, event)
@@ -66,7 +66,7 @@ func AccountLimitViolation(v Violations) (string, bool) {
 		balance += event.Payload.(Transaction).Amount
 	}
 
-	amount := v.CurrentEvent.Payload.(Transaction).Amount
+	amount := v.TransactionIntent.Amount
 
 	if amount > balance {
 		return InsuficientLimit, true

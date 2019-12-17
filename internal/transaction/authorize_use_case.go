@@ -9,26 +9,24 @@ import (
 
 // AuthorizeUseCase
 type AuthorizeUseCase struct {
-	ur ac.Repository
+	ar ac.Repository
 	tr Repository
 	t  Transaction
 }
 
 // Execute
 func (uc *AuthorizeUseCase) Execute() []string {
-	now := time.Now()
-	twoMinutes := time.Minute + time.Duration(2)
-	past := now.Add(-twoMinutes)
+	account := uc.ar.CurrentAccount()
+	events := uc.tr.IterAfter(uc.pastDateToGetEvents())
 
-	account := ac.Account{ActiveCard: true, AvailableLimit: 200}
-	events := uc.tr.IterAfter(past)
+	violations := uc.runViolations(account, events)
+}
 
-	event := es.Event{Name: TransactionValidated, Payload: uc.t}
+func (uc *AuthorizeUseCase) runViolations(account ac.Account, events []es.Event) []string {
+	violations := []string{}
 
 	acViolation := ac.Violations{Account: account}
-	trViolation := Violations{Account: account, TransactionEvents: events, CurrentEvent: event}
-
-	violations := []string{}
+	trViolation := Violations{Account: account, TransactionEvents: events, TransactionIntent: uc.t}
 
 	init, initStatus := ac.NotInitilizedViolation(acViolation)
 	active, activeStatus := ac.ActiveCardViolation(acViolation)
@@ -36,6 +34,14 @@ func (uc *AuthorizeUseCase) Execute() []string {
 	allowed, allowedStatus := MoreThanAllowedViolation(trViolation)
 	duplicated, duplicatedStatus := DuplicatedTransaction(trViolation)
 	limit, limitStatus := AccountLimitViolation(trViolation)
+
+	if initStatus {
+		violations = append(violations, init)
+	}
+
+	if activeStatus {
+		violations = append(violations, active)
+	}
 
 	if allowedStatus {
 		violations = append(violations, allowed)
@@ -49,13 +55,13 @@ func (uc *AuthorizeUseCase) Execute() []string {
 		violations = append(violations, limit)
 	}
 
-	if initStatus {
-		violations = append(violations, init)
-	}
-
-	if activeStatus {
-		violations = append(violations, active)
-	}
-
 	return violations
+}
+
+func (uc *AuthorizeUseCase) pastDateToGetEvents() time.Time {
+	now := time.Now()
+	twoMinutes := time.Minute + time.Duration(2)
+	past := now.Add(-twoMinutes)
+
+	return past
 }
