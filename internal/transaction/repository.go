@@ -13,6 +13,12 @@ type Repository struct {
 	DB *ms.MemoryStore
 }
 
+// RepositoryInterface
+type RepositoryInterface interface {
+	Append(t Transaction) bool
+	IterAfter(after time.Time) []es.Event
+}
+
 // New returns a new instance of Repository
 func New(db *ms.MemoryStore) Repository {
 	return Repository{DB: db}

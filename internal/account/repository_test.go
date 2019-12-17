@@ -15,9 +15,9 @@ func TestCreateAccount(t *testing.T) {
 	namespace := "fake_name"
 	memoryStore := ms.NewStorage(namespace)
 
-	Repository := New(&memoryStore)
+	repo := New(&memoryStore)
 
-	Repository.CreateAccount(account)
+	repo.CreateAccount(account)
 
 	events := memoryStore.Get()
 
@@ -31,12 +31,12 @@ func TestCreateConcurrent(t *testing.T) {
 	namespace := "fake_name"
 	memoryStore := ms.NewStorage(namespace)
 
-	Repository := New(&memoryStore)
+	repo := New(&memoryStore)
 	var wg sync.WaitGroup
 
 	wg.Add(times)
 	for i := 0; i < times; i++ {
-		go createAndMarkAsDone(&Repository, &wg)
+		go createAndMarkAsDone(&repo, &wg)
 	}
 	wg.Wait()
 

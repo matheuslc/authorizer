@@ -9,24 +9,25 @@ import (
 
 // AuthorizeUseCase
 type AuthorizeUseCase struct {
-	ar ac.Repository
-	tr Repository
-	t  Transaction
+	accountRepo       ac.Repository
+	transactionRepo   Repository
+	transactionIntent Transaction
 }
 
 // Execute
 func (uc *AuthorizeUseCase) Execute() []string {
-	account := uc.ar.CurrentAccount()
-	events := uc.tr.IterAfter(uc.pastDateToGetEvents())
+	account := uc.accountRepo.CurrentAccount()
+	events := uc.transactionRepo.IterAfter(uc.pastDateToGetEvents())
 
 	violations := uc.runViolations(account, events)
+	return violations
 }
 
 func (uc *AuthorizeUseCase) runViolations(account ac.Account, events []es.Event) []string {
 	violations := []string{}
 
 	acViolation := ac.Violations{Account: account}
-	trViolation := Violations{Account: account, TransactionEvents: events, TransactionIntent: uc.t}
+	trViolation := Violations{Account: account, TransactionEvents: events, TransactionIntent: uc.transactionIntent}
 
 	init, initStatus := ac.NotInitilizedViolation(acViolation)
 	active, activeStatus := ac.ActiveCardViolation(acViolation)

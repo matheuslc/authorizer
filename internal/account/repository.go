@@ -13,6 +13,12 @@ type Repository struct {
 	DB *ms.MemoryStore
 }
 
+// RepositoryInterface
+type RepositoryInterface interface {
+	CreateAccount(ac Account) bool
+	CurrentAccount() Account
+}
+
 // New returns a new instance of Repository
 func New(db *ms.MemoryStore) Repository {
 	return Repository{DB: db}
@@ -20,7 +26,7 @@ func New(db *ms.MemoryStore) Repository {
 
 // CreateAccount a new event into the EventStore
 func (ar *Repository) CreateAccount(ac Account) bool {
-	accountExists := ar.AccountAlreadyExists()
+	accountExists := ar.accountAlreadyExists()
 	if accountExists {
 		return false
 	}
@@ -46,7 +52,7 @@ func (ar *Repository) CurrentAccount() Account {
 }
 
 // AccountAlreadyExists checks if an account already was initialized
-func (ar *Repository) AccountAlreadyExists() bool {
+func (ar *Repository) accountAlreadyExists() bool {
 	c := ar.DB.Iter()
 
 	for event := range c {

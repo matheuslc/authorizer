@@ -3,27 +3,31 @@ package transactionentity
 import (
 	"testing"
 
-	"github.com/matheuslc/authorizer/internal/account"
+	ac "github.com/matheuslc/authorizer/internal/account"
 	"github.com/matheuslc/authorizer/internal/eventstore/memorystore"
 )
 
-func TestAuthorizeAccountAccountViolation(t *testing.T) {
+func TestAuthorizeViolation(t *testing.T) {
 	acStore := memorystore.NewStorage("account")
 	tStore := memorystore.NewStorage("transaction")
-	acRepository := account.Repository{DB: &acStore}
-	tRepository := Repository{DB: &tStore}
 
-	tr := Transaction{Merchant: "nuevo-store", Amount: 200}
-	tr2 := Transaction{Merchant: "anonther-store", Amount: 20}
-	tr3 := Transaction{Merchant: "anonther-store", Amount: 22}
-	tr4 := Transaction{Merchant: "anonther-store", Amount: 22}
+	accountRepo := ac.Repository{DB: &acStore}
+	transactionRepo := Repository{DB: &tStore}
 
-	tRepository.Append(tr)
-	tRepository.Append(tr2)
-	tRepository.Append(tr3)
-	tRepository.Append(tr4)
+	account := ac.Account{ActiveCard: true, AvailableLimit: 200}
 
-	useCase := AuthorizeUseCase{ur: acRepository, tr: tRepository, t: tr4}
+	trDone := Transaction{Merchant: "nuevo-store", Amount: 150}
+	trWithoutLimit := Transaction{Merchant: "anonther-store", Amount: 70}
+
+	accountRepo.CreateAccount(account)
+	transactionRepo.Append(trDone)
+
+	useCase := AuthorizeUseCase{
+		accountRepo:       accountRepo,
+		transactionRepo:   transactionRepo,
+		transactionIntent: trWithoutLimit,
+	}
+
 	violations := useCase.Execute()
 
 	if len(violations) == 2 {
