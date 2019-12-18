@@ -2,13 +2,14 @@ package account
 
 import es "github.com/matheuslc/authorizer/internal/eventstore"
 
-// CreateUseCase
+// CreateUseCase struct defines what it takes to create an account
 type CreateUseCase struct {
 	AccountRepo   Repository
 	AccountIntent Account
 }
 
-// Execute
+// Execute runs the violation functions under the account events and if no violations were found,
+// then a new account is created
 func (uc *CreateUseCase) Execute() es.Event {
 	accountEvents := uc.AccountRepo.Iter()
 	acViolation := Violations{AccountEvents: accountEvents, AccountIntent: uc.AccountIntent}

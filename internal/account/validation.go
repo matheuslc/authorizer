@@ -2,7 +2,7 @@ package account
 
 import es "github.com/matheuslc/authorizer/internal/eventstore"
 
-// Account violations string
+// Account violations constants
 const (
 	AlreadyInitialized = "account-already-initialized"
 	NotInitialized     = "account-not-initialized"
@@ -10,13 +10,13 @@ const (
 	Empty              = ""
 )
 
-// Violations describes an Account violations structure to be validated
+// Violations struct describes an Account violations structure to be validated
 type Violations struct {
 	AccountEvents []es.Event
 	AccountIntent Account
 }
 
-// AlreadyInitializedViolation
+// AlreadyInitializedViolation checks if an account already exists
 func AlreadyInitializedViolation(v Violations) (string, bool) {
 	for _, event := range v.AccountEvents {
 		if event.Name == AccountCreated {
@@ -27,7 +27,7 @@ func AlreadyInitializedViolation(v Violations) (string, bool) {
 	return Empty, false
 }
 
-// NotInitilizedViolation checks if an account was previously initialized
+// NotInitilizedViolation checks if an account exists
 func NotInitilizedViolation(v Violations) (string, bool) {
 	_, ok := AlreadyInitializedViolation(v)
 
@@ -38,7 +38,7 @@ func NotInitilizedViolation(v Violations) (string, bool) {
 	return Empty, false
 }
 
-// ActiveCardViolation checks if the account have an ActiveCard
+// ActiveCardViolation checks if the account has an active card
 func ActiveCardViolation(v Violations) (string, bool) {
 	if v.AccountIntent.ActiveCard {
 		return CardNotActive, false

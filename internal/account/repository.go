@@ -12,25 +12,26 @@ type Repository struct {
 	DB *ms.MemoryStore
 }
 
-// RepositoryInterface
+// RepositoryInterface defines the contract of an Account Repository
 type RepositoryInterface interface {
 	CreateAccount(ac Account) bool
 	CurrentAccount() Account
 }
 
-// CreateAccount a new event into the EventStore
+// CreateAccount saves the new user inside the event store
 func (ar *Repository) CreateAccount(event es.Event) {
 	ar.DB.Append(event)
 }
 
-// NewEvent
+// NewEvent creates a new event
 func (ar *Repository) NewEvent(ac Account, eventType string, violations []string) es.Event {
 	time := time.Now()
 	event := es.Event{Timestamp: time, Name: eventType, Payload: ac, Violations: violations}
 	return event
 }
 
-// CurrentAccount
+// CurrentAccount returns the current system account
+// Currently, we handle just one account. We loop through "account created" events searching for the account definition
 func (ar *Repository) CurrentAccount() Account {
 	c := ar.DB.EventsByName(AccountCreated)
 	account := Account{}
@@ -42,7 +43,7 @@ func (ar *Repository) CurrentAccount() Account {
 	return account
 }
 
-// Iter
+// Iter exposes all account events persisted inside the account store
 func (ar *Repository) Iter() []es.Event {
 	data := ar.DB.Iter()
 	ocur := []es.Event{}

@@ -5,7 +5,8 @@ import (
 	"github.com/matheuslc/authorizer/internal/eventstore/memorystore"
 )
 
-// AccountCommandHandler
+// CommandHandler knows how to handle the create account flow
+// Its receive the message payload and account event store
 func CommandHandler(
 	payload map[string]interface{},
 	acStore *memorystore.MemoryStore,

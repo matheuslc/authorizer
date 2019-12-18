@@ -8,7 +8,6 @@ import (
 	"os"
 
 	ac "github.com/matheuslc/authorizer/internal/account"
-	"github.com/matheuslc/authorizer/internal/eventstore"
 	"github.com/matheuslc/authorizer/internal/eventstore/memorystore"
 	tr "github.com/matheuslc/authorizer/internal/transaction"
 )
@@ -36,27 +35,9 @@ func main() {
 
 			fmt.Println(tr.JSONPresenter(event))
 		} else if json["account"] != nil {
-			event := AccountCommandHandler(json["account"], &accountStore)
+			event := ac.CommandHandler(json["account"], &accountStore)
 
 			fmt.Println(ac.JSONPresenter(event))
 		}
 	}
-}
-
-// AccountCommandHandler
-func AccountCommandHandler(
-	payload map[string]interface{},
-	acStore *memorystore.MemoryStore,
-) eventstore.Event {
-	acRepo := ac.Repository{DB: acStore}
-
-	useCase := ac.CreateUseCase{
-		AccountRepo: acRepo,
-		AccountIntent: ac.Account{
-			ActiveCard:     payload["active-card"].(bool),
-			AvailableLimit: int(payload["available-limit"].(float64)),
-		},
-	}
-
-	return useCase.Execute()
 }
