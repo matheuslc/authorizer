@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	es "github.com/matheuslc/authorizer/internal/eventstore"
 )
 
@@ -25,9 +24,7 @@ func TestAppend(t *testing.T) {
 	)
 
 	for index, date := range timeRange {
-		uuid, _ := uuid.NewUUID()
-		fakeEvent := es.Event{ID: uuid, Timestamp: date, Name: uuid.String(), Payload: index}
-
+		fakeEvent := es.Event{Timestamp: date, Name: "fake-event", Payload: index}
 		memoryStore.Append(fakeEvent)
 	}
 
@@ -59,9 +56,7 @@ func TestIterAfter(t *testing.T) {
 	)
 
 	for index, date := range timeRange {
-		uuid, _ := uuid.NewUUID()
-		fakeEvent := es.Event{ID: uuid, Timestamp: date, Name: strconv.Itoa(index), Payload: index}
-
+		fakeEvent := es.Event{Timestamp: date, Name: strconv.Itoa(index), Payload: index}
 		memoryStore.Append(fakeEvent)
 	}
 
@@ -97,8 +92,7 @@ func TestAppendConcurrent(t *testing.T) {
 }
 
 func appendAndMarkAsDone(db *MemoryStore, wg *sync.WaitGroup) {
-	uuid, _ := uuid.NewUUID()
-	fakeEvent := es.Event{ID: uuid, Timestamp: time.Now(), Name: "lorem:ipsum", Payload: 10}
+	fakeEvent := es.Event{Timestamp: time.Now(), Name: "lorem:ipsum", Payload: 10}
 	db.Append(fakeEvent)
 	wg.Done()
 }

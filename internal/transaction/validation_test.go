@@ -4,18 +4,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	ac "github.com/matheuslc/authorizer/internal/account"
 	es "github.com/matheuslc/authorizer/internal/eventstore"
 )
 
 func TestMoreThanAllowedViolation(t *testing.T) {
 	events := generateEvents(4)
-	uuid, _ := uuid.NewUUID()
 
-	ac := ac.Account{ID: uuid, ActiveCard: true, AvailableLimit: 100}
+	ac := ac.Account{ActiveCard: true, AvailableLimit: 100}
 	time := time.Now()
-	transaction := Transaction{ID: uuid, Merchant: "carmel-restaurant", Amount: 100, time: time}
+	transaction := Transaction{Merchant: "carmel-restaurant", Amount: 100, Time: time}
 
 	tv := Violations{Account: ac, TransactionEvents: events, TransactionIntent: transaction}
 	_, violations := MoreThanAllowedViolation(tv)
@@ -27,9 +25,9 @@ func TestMoreThanAllowedViolation(t *testing.T) {
 
 func TestMoreThanAllowedViolationSuccess(t *testing.T) {
 	events := generateEvents(1)
-	uuid, _ := uuid.NewUUID()
-	ac := ac.Account{ID: uuid, ActiveCard: true, AvailableLimit: 100}
-	transaction := Transaction{ID: uuid, Merchant: "carmel-restaurant", Amount: 100, time: time.Now()}
+
+	ac := ac.Account{ActiveCard: true, AvailableLimit: 100}
+	transaction := Transaction{Merchant: "carmel-restaurant", Amount: 100, Time: time.Now()}
 
 	tv := Violations{Account: ac, TransactionEvents: events, TransactionIntent: transaction}
 	_, violations := MoreThanAllowedViolation(tv)
@@ -41,9 +39,9 @@ func TestMoreThanAllowedViolationSuccess(t *testing.T) {
 
 func TestDuplicatedTransaction(t *testing.T) {
 	events := generateEvents(1)
-	uuid, _ := uuid.NewUUID()
-	ac := ac.Account{ID: uuid, ActiveCard: true, AvailableLimit: 100}
-	transaction := Transaction{ID: uuid, Merchant: "carmel-restaurant", Amount: 100, time: time.Now()}
+
+	ac := ac.Account{ActiveCard: true, AvailableLimit: 100}
+	transaction := Transaction{Merchant: "carmel-restaurant", Amount: 100, Time: time.Now()}
 
 	tv := Violations{Account: ac, TransactionEvents: events, TransactionIntent: transaction}
 	_, ok := DuplicatedTransaction(tv)
@@ -56,10 +54,9 @@ func TestDuplicatedTransaction(t *testing.T) {
 func TestConcurrent(t *testing.T) {
 	events := generateEvents(10)
 	secondEvents := generateEvents(10)
-	uuid, _ := uuid.NewUUID()
 
-	transaction := Transaction{ID: uuid, Merchant: "carmel-restaurant", Amount: 100, time: time.Now()}
-	ac := ac.Account{ID: uuid, ActiveCard: true, AvailableLimit: 100}
+	transaction := Transaction{Merchant: "carmel-restaurant", Amount: 100, Time: time.Now()}
+	ac := ac.Account{ActiveCard: true, AvailableLimit: 100}
 
 	tv := Violations{Account: ac, TransactionEvents: events, TransactionIntent: transaction}
 	tv2 := Violations{Account: ac, TransactionEvents: secondEvents, TransactionIntent: transaction}
@@ -78,10 +75,9 @@ func TestConcurrent(t *testing.T) {
 
 func TestAccountLimitViolation(t *testing.T) {
 	events := generateEvents(10)
-	uuid, _ := uuid.NewUUID()
 
-	transaction := Transaction{ID: uuid, Merchant: "carmel-restaurant", Amount: 250, time: time.Now()}
-	ac := ac.Account{ID: uuid, ActiveCard: true, AvailableLimit: 200}
+	transaction := Transaction{Merchant: "carmel-restaurant", Amount: 250, Time: time.Now()}
+	ac := ac.Account{ActiveCard: true, AvailableLimit: 200}
 	tv := Violations{Account: ac, TransactionEvents: events, TransactionIntent: transaction}
 
 	_, ok := AccountLimitViolation(tv)
@@ -92,10 +88,9 @@ func TestAccountLimitViolation(t *testing.T) {
 }
 
 func genEvent() es.Event {
-	uuid, _ := uuid.NewUUID()
 	time := time.Now()
-	transaction := Transaction{ID: uuid, Merchant: "carmel-restaurant", Amount: 100, time: time}
-	event := es.Event{ID: uuid, Timestamp: time, Name: TransactionValidated, Payload: transaction}
+	transaction := Transaction{Merchant: "carmel-restaurant", Amount: 100, Time: time}
+	event := es.Event{Timestamp: time, Name: TransactionValidated, Payload: transaction}
 
 	return event
 }

@@ -3,7 +3,6 @@ package account
 import (
 	"time"
 
-	"github.com/google/uuid"
 	es "github.com/matheuslc/authorizer/internal/eventstore"
 	ms "github.com/matheuslc/authorizer/internal/eventstore/memorystore"
 )
@@ -25,13 +24,12 @@ func New(db *ms.MemoryStore) Repository {
 }
 
 // CreateAccount a new event into the EventStore
-func (ar *Repository) CreateAccount(ac Account) bool {
-	uuid, _ := uuid.NewUUID()
+func (ar *Repository) CreateAccount(ac Account) es.Event {
 	time := time.Now()
-	event := es.Event{ID: uuid, Timestamp: time, Name: AccountCreated, Payload: ac}
+	event := es.Event{Timestamp: time, Name: AccountCreated, Payload: ac}
 
 	ar.DB.Append(event)
-	return true
+	return event
 }
 
 // CurrentAccount

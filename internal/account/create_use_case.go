@@ -1,19 +1,23 @@
 package account
 
+import es "github.com/matheuslc/authorizer/internal/eventstore"
+
 // CreateUseCase
 type CreateUseCase struct {
-	accountRepo   Repository
-	accountIntent Account
+	AccountRepo   Repository
+	AccountIntent Account
 }
 
 // Execute
-func (uc *CreateUseCase) Execute() []string {
-	accountEvents := uc.accountRepo.Iter()
+func (uc *CreateUseCase) Execute() es.Event {
+	// accountEvents := uc.AccountRepo.Iter()
 
-	acViolation := Violations{AccountEvents: accountEvents, AccountIntent: uc.accountIntent}
+	// acViolation := Violations{AccountEvents: accountEvents, AccountIntent: uc.AccountIntent}
 
-	violations := uc.runViolations(acViolation)
-	return violations
+	// violations := uc.runViolations(acViolation)
+	event := uc.AccountRepo.CreateAccount(uc.AccountIntent)
+
+	return event
 }
 
 func (uc *CreateUseCase) runViolations(acViolation Violations) []string {

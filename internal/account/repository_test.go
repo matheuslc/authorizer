@@ -4,14 +4,11 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/google/uuid"
 	ms "github.com/matheuslc/authorizer/internal/eventstore/memorystore"
 )
 
 func TestCreateAccount(t *testing.T) {
-	uuid, _ := uuid.NewUUID()
-
-	account := Account{ID: uuid, ActiveCard: true, AvailableLimit: 100}
+	account := Account{ActiveCard: true, AvailableLimit: 100}
 	namespace := "fake_name"
 	memoryStore := ms.NewStorage(namespace)
 
@@ -48,8 +45,7 @@ func TestCreateConcurrent(t *testing.T) {
 }
 
 func createAndMarkAsDone(ar *Repository, wg *sync.WaitGroup) {
-	uuid, _ := uuid.NewUUID()
-	account := Account{ID: uuid, ActiveCard: true, AvailableLimit: 100}
+	account := Account{ActiveCard: true, AvailableLimit: 100}
 
 	ar.CreateAccount(account)
 	wg.Done()

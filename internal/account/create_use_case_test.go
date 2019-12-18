@@ -12,14 +12,14 @@ func TestCreateUseCaseSuccess(t *testing.T) {
 
 	account := Account{ActiveCard: true, AvailableLimit: 200}
 	useCase := CreateUseCase{
-		accountRepo:   accountRepo,
-		accountIntent: account,
+		AccountRepo:   accountRepo,
+		AccountIntent: account,
 	}
 
-	violations := useCase.Execute()
+	event := useCase.Execute()
 
-	if len(violations) > 0 {
-		t.Errorf("Expected to not thrown any violation. Throwns: %v", len(violations))
+	if len(event.Violations) > 0 {
+		t.Errorf("Expected to not thrown any violation. Throwns: %v", len(event.Violations))
 	}
 }
 
@@ -31,17 +31,17 @@ func TestCreateUseCaseViolation(t *testing.T) {
 	accountRepo.CreateAccount(account)
 
 	useCase := CreateUseCase{
-		accountRepo:   accountRepo,
-		accountIntent: account,
+		AccountRepo:   accountRepo,
+		AccountIntent: account,
 	}
 
-	violations := useCase.Execute()
+	event := useCase.Execute()
 
-	if len(violations) != 1 {
-		t.Errorf("Expected just one violations and get %v", len(violations))
+	if len(event.Violations) != 1 {
+		t.Errorf("Expected just one violations and get %v", len(event.Violations))
 	}
 
-	if violations[0] != AlreadyInitialized {
-		t.Errorf("Expected %v as violation. Get %v", AlreadyInitialized, violations[0])
+	if event.Violations[0] != AlreadyInitialized {
+		t.Errorf("Expected %v as violation. Get %v", AlreadyInitialized, event.Violations[0])
 	}
 }

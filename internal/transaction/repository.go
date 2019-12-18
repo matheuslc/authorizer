@@ -3,7 +3,6 @@ package transactionentity
 import (
 	"time"
 
-	"github.com/google/uuid"
 	es "github.com/matheuslc/authorizer/internal/eventstore"
 	ms "github.com/matheuslc/authorizer/internal/eventstore/memorystore"
 )
@@ -24,21 +23,23 @@ func New(db *ms.MemoryStore) Repository {
 	return Repository{DB: db}
 }
 
-// Append a new event into the EventStore
-func (tr *Repository) Append(t Transaction, v []string) es.Event {
-	uuid, _ := uuid.NewUUID()
+// NewEvent
+func (tr *Repository) NewEvent(t Transaction, evenType string, violations []string) es.Event {
 	time := time.Now()
 
 	event := es.Event{
-		ID:         uuid,
 		Timestamp:  time,
-		Name:       TransactionValidated,
+		Name:       evenType,
 		Payload:    t,
-		Violations: v,
+		Violations: violations,
 	}
 
-	tr.DB.Append(event)
 	return event
+}
+
+// Append a new event into the EventStore
+func (tr *Repository) Append(ev es.Event) {
+	tr.DB.Append(ev)
 }
 
 // All

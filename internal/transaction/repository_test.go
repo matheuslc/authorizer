@@ -5,24 +5,22 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
+	es "github.com/matheuslc/authorizer/internal/eventstore"
 	ms "github.com/matheuslc/authorizer/internal/eventstore/memorystore"
 )
 
 func TesteAppendTransaction(t *testing.T) {
-	uuid, _ := uuid.NewUUID()
-
-	transaction := Transaction{ID: uuid, Merchant: "Carmels Store", Amount: 10, time: time.Now()}
+	transaction := Transaction{Merchant: "Carmels Store", Amount: 10, Time: time.Now()}
 	namespace := "fake_name"
 	memoryStore := ms.NewStorage(namespace)
 
-	Repository := New(&memoryStore)
-	Repository.Append(transaction, []string{})
+	repo := New(&memoryStore)
+	repo.Append(es.Event{Payload: transaction})
 
 	events := memoryStore.Get()
 
-	if events[0].Payload.(Transaction).ID != uuid {
-		t.Errorf("Event out of order was inserted sorted")
+	if events[0].Payload.(Transaction).Amount != 10 {
+		t.Errorf("Event was not inserted as expected")
 	}
 }
 
@@ -47,9 +45,8 @@ func TestAppendConcurrent(t *testing.T) {
 }
 
 func appendAndMarkAsDone(tr *Repository, wg *sync.WaitGroup) {
-	uuid, _ := uuid.NewUUID()
-	transaction := Transaction{ID: uuid, Merchant: "Carmels Store", Amount: 10, time: time.Now()}
+	transaction := Transaction{Merchant: "Carmels Store", Amount: 10, Time: time.Now()}
 
-	tr.Append(transaction, []string{})
+	tr.Append(es.Event{Payload: transaction})
 	wg.Done()
 }

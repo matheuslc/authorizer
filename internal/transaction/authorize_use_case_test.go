@@ -2,8 +2,10 @@ package transactionentity
 
 import (
 	"testing"
+	"time"
 
 	ac "github.com/matheuslc/authorizer/internal/account"
+	es "github.com/matheuslc/authorizer/internal/eventstore"
 	"github.com/matheuslc/authorizer/internal/eventstore/memorystore"
 )
 
@@ -16,16 +18,16 @@ func TestAuthorizeTransactionSuccess(t *testing.T) {
 
 	account := ac.Account{ActiveCard: true, AvailableLimit: 2000}
 
-	trDone := Transaction{Merchant: "nuevo-store", Amount: 1000}
+	trDone := es.Event{Payload: Transaction{Merchant: "nuevo-store", Amount: 1000}}
 	trSuccess := Transaction{Merchant: "anonther-store", Amount: 700}
 
 	accountRepo.CreateAccount(account)
-	transactionRepo.Append(trDone, []string{})
+	transactionRepo.Append(trDone)
 
 	useCase := AuthorizeUseCase{
-		accountRepo:       accountRepo,
-		transactionRepo:   transactionRepo,
-		transactionIntent: trSuccess,
+		AccountRepo:       accountRepo,
+		TransactionRepo:   transactionRepo,
+		TransactionIntent: trSuccess,
 	}
 
 	event := useCase.Execute()
@@ -53,12 +55,12 @@ func TestAuthorizeViolation(t *testing.T) {
 	trWithoutLimit := Transaction{Merchant: "anonther-store", Amount: 70}
 
 	accountRepo.CreateAccount(account)
-	transactionRepo.Append(trDone, []string{})
+	transactionRepo.Append(es.Event{Name: TransactionValidated, Payload: trDone, Timestamp: time.Now()})
 
 	useCase := AuthorizeUseCase{
-		accountRepo:       accountRepo,
-		transactionRepo:   transactionRepo,
-		transactionIntent: trWithoutLimit,
+		AccountRepo:       accountRepo,
+		TransactionRepo:   transactionRepo,
+		TransactionIntent: trWithoutLimit,
 	}
 
 	event := useCase.Execute()
@@ -85,12 +87,12 @@ func TestDoubleTransactionViolationUseCase(t *testing.T) {
 	trDoubled := Transaction{Merchant: "nuevo-store", Amount: 150}
 
 	accountRepo.CreateAccount(account)
-	transactionRepo.Append(trDone, []string{})
+	transactionRepo.Append(es.Event{Payload: trDone, Timestamp: time.Now()})
 
 	useCase := AuthorizeUseCase{
-		accountRepo:       accountRepo,
-		transactionRepo:   transactionRepo,
-		transactionIntent: trDoubled,
+		AccountRepo:       accountRepo,
+		TransactionRepo:   transactionRepo,
+		TransactionIntent: trDoubled,
 	}
 
 	event := useCase.Execute()
@@ -112,20 +114,20 @@ func TestMoreThanAllowedTransactionViolationUseCase(t *testing.T) {
 
 	account := ac.Account{ActiveCard: true, AvailableLimit: 1000}
 
-	trNuevo := Transaction{Merchant: "nuevo-store", Amount: 150}
-	trCarmel := Transaction{Merchant: "carmel-store", Amount: 150}
-	trNubank := Transaction{Merchant: "nubank-store", Amount: 150}
+	trNuevo := es.Event{Payload: Transaction{Merchant: "nuevo-store", Amount: 150}, Timestamp: time.Now()}
+	trCarmel := es.Event{Payload: Transaction{Merchant: "carmel-store", Amount: 150}, Timestamp: time.Now()}
+	trNubank := es.Event{Payload: Transaction{Merchant: "nubank-store", Amount: 150}, Timestamp: time.Now()}
 	trExceded := Transaction{Merchant: "intent-store", Amount: 150}
 
 	accountRepo.CreateAccount(account)
-	transactionRepo.Append(trNuevo, []string{})
-	transactionRepo.Append(trCarmel, []string{})
-	transactionRepo.Append(trNubank, []string{})
+	transactionRepo.Append(trNuevo)
+	transactionRepo.Append(trCarmel)
+	transactionRepo.Append(trNubank)
 
 	useCase := AuthorizeUseCase{
-		accountRepo:       accountRepo,
-		transactionRepo:   transactionRepo,
-		transactionIntent: trExceded,
+		AccountRepo:       accountRepo,
+		TransactionRepo:   transactionRepo,
+		TransactionIntent: trExceded,
 	}
 
 	event := useCase.Execute()
