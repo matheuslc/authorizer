@@ -14,8 +14,10 @@ type Event struct {
 
 // EventStore interface defines what an EventStore needs
 type EventStore interface {
-	Append(event Event)
+	Append(event Event) Event
+	EventsByName(name string) <-chan Event
 	Get() []Event
 	Iter() <-chan Event
+	IterAfter(after time.Time) <-chan Event
 	NewStorage(namespace string) EventStore
 }

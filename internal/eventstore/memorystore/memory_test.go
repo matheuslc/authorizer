@@ -84,8 +84,7 @@ func TestAppendConcurrent(t *testing.T) {
 	}
 	wg.Wait()
 
-	items := <-memoryStore.GetByChannel()
-
+	items := memoryStore.Get()
 	if len(items) != times {
 		t.Errorf("Expected 100 items to be appended into the storage.")
 	}

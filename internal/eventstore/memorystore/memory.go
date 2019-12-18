@@ -8,20 +8,20 @@ import (
 	es "github.com/matheuslc/authorizer/internal/eventstore"
 )
 
-// MemoryStore defines how a storage is
+// MemoryStore defines how an event store need to be
 type MemoryStore struct {
 	sync.RWMutex
 	Namespace string
 	Data      map[string][]es.Event
 }
 
-// NewStorage is a factory to create a new storage
+// NewStorage is like a factory function to create a new storage
 func NewStorage(namespace string) MemoryStore {
 	data := make(map[string][]es.Event)
 	return MemoryStore{Namespace: namespace, Data: data}
 }
 
-// Append a new event into the EventStore
+// Append a new event into the event store
 func (db *MemoryStore) Append(event es.Event) es.Event {
 	db.Lock()
 	defer db.Unlock()
@@ -30,11 +30,11 @@ func (db *MemoryStore) Append(event es.Event) es.Event {
 	newHistory := append(currentHistory, event)
 
 	db.Data[db.Namespace] = newHistory
-	db.sort()
+	// db.sort()
 	return event
 }
 
-// Get the key value from storage
+// Get the key value from store
 func (db *MemoryStore) Get() []es.Event {
 	db.Lock()
 	defer db.Unlock()
@@ -43,32 +43,7 @@ func (db *MemoryStore) Get() []es.Event {
 	return value
 }
 
-// GetByChannel
-func (db *MemoryStore) GetByChannel() <-chan []es.Event {
-	c := make(chan []es.Event)
-
-	f := func() {
-		db.Lock()
-		defer db.Unlock()
-
-		c <- db.Data[db.Namespace]
-		close(c)
-	}
-
-	go f()
-
-	return c
-}
-
-func (db *MemoryStore) sort() {
-	sort.Slice(db.Data[db.Namespace], func(i, j int) bool {
-		return db.Data[db.Namespace][i].Timestamp.Before(db.Data[db.Namespace][j].Timestamp)
-	})
-}
-
-// Iter over the items in a concurrent map
-// Each item is sent over a channel, so that
-// we can iterate over the map using the builtin range keyword locking the resource
+// Iter iterates over the items in a concurrent map
 func (db *MemoryStore) Iter() <-chan es.Event {
 	c := make(chan es.Event)
 
@@ -105,7 +80,7 @@ func (db *MemoryStore) IterAfter(after time.Time) <-chan es.Event {
 	return c
 }
 
-// CountEventsByName
+// EventsByName filters events by name and returns the collection
 func (db *MemoryStore) EventsByName(name string) <-chan es.Event {
 	c := make(chan es.Event)
 	data := db.Iter()
@@ -122,4 +97,10 @@ func (db *MemoryStore) EventsByName(name string) <-chan es.Event {
 
 	go f()
 	return c
+}
+
+func (db *MemoryStore) sort() {
+	sort.Slice(db.Data[db.Namespace], func(i, j int) bool {
+		return db.Data[db.Namespace][i].Timestamp.Before(db.Data[db.Namespace][j].Timestamp)
+	})
 }
