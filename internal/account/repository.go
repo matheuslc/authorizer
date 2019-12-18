@@ -14,8 +14,10 @@ type Repository struct {
 
 // RepositoryInterface defines the contract of an Account Repository
 type RepositoryInterface interface {
-	CreateAccount(ac Account) bool
+	CreateAccount(event es.Event) bool
 	CurrentAccount() Account
+	NewEvent(a Account, eventType string, violations []string) es.Event
+	Iter() []es.Event
 }
 
 // CreateAccount saves the new user inside the event store

@@ -4,6 +4,7 @@ import (
 	"sync"
 	"testing"
 
+	es "github.com/matheuslc/authorizer/internal/eventstore"
 	ms "github.com/matheuslc/authorizer/internal/eventstore/memorystore"
 )
 
@@ -11,13 +12,12 @@ func TestCreateAccount(t *testing.T) {
 	account := Account{ActiveCard: true, AvailableLimit: 100}
 	namespace := "fake_name"
 	memoryStore := ms.NewStorage(namespace)
+	repo := Repository{&memoryStore}
 
-	repo := New(&memoryStore)
-
-	repo.CreateAccount(account)
+	accountEvent := es.Event{Payload: account}
+	repo.CreateAccount(accountEvent)
 
 	events := memoryStore.Get()
-
 	if events[0].Payload.(Account).ActiveCard == false {
 		t.Errorf("Event out of order was inserted sorted")
 	}
@@ -28,7 +28,7 @@ func TestCreateConcurrent(t *testing.T) {
 	namespace := "fake_name"
 	memoryStore := ms.NewStorage(namespace)
 
-	repo := New(&memoryStore)
+	repo := Repository{DB: &memoryStore}
 	var wg sync.WaitGroup
 
 	wg.Add(times)
@@ -39,14 +39,15 @@ func TestCreateConcurrent(t *testing.T) {
 
 	items := memoryStore.Get()
 
-	if len(items) != 1 {
-		t.Errorf("Concurrent try to insert a new account.")
+	if len(items) != times {
+		t.Errorf("Can't insert all the items. %v was inserted.", len(items))
 	}
 }
 
 func createAndMarkAsDone(ar *Repository, wg *sync.WaitGroup) {
 	account := Account{ActiveCard: true, AvailableLimit: 100}
+	event := es.Event{Payload: account}
 
-	ar.CreateAccount(account)
+	ar.CreateAccount(event)
 	wg.Done()
 }

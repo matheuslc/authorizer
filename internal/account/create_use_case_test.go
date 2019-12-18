@@ -3,6 +3,7 @@ package account
 import (
 	"testing"
 
+	es "github.com/matheuslc/authorizer/internal/eventstore"
 	"github.com/matheuslc/authorizer/internal/eventstore/memorystore"
 )
 
@@ -28,15 +29,15 @@ func TestCreateUseCaseViolation(t *testing.T) {
 	accountRepo := Repository{DB: &acStore}
 
 	account := Account{ActiveCard: true, AvailableLimit: 200}
-	accountRepo.CreateAccount(account)
+	accountEvent := es.Event{Name: AccountCreated, Payload: account}
 
+	accountRepo.CreateAccount(accountEvent)
 	useCase := CreateUseCase{
 		AccountRepo:   accountRepo,
 		AccountIntent: account,
 	}
 
 	event := useCase.Execute()
-
 	if len(event.Violations) != 1 {
 		t.Errorf("Expected just one violations and get %v", len(event.Violations))
 	}
