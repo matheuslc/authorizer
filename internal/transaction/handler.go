@@ -8,7 +8,8 @@ import (
 	"github.com/matheuslc/authorizer/internal/eventstore/memorystore"
 )
 
-// TransactionCommandHandler
+// CommandHandler knows how to handle the authorize transaction flow
+// It receives the message payload and transaction current state events
 func CommandHandler(
 	payload map[string]interface{},
 	acStore *memorystore.MemoryStore,

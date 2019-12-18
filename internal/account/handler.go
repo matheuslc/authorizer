@@ -6,7 +6,7 @@ import (
 )
 
 // CommandHandler knows how to handle the create account flow
-// Its receive the message payload and account event store
+// It receives the message payload and account current state events
 func CommandHandler(
 	payload map[string]interface{},
 	acStore *memorystore.MemoryStore,
