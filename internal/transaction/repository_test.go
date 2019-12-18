@@ -14,7 +14,7 @@ func TesteAppendTransaction(t *testing.T) {
 	namespace := "fake_name"
 	memoryStore := ms.NewStorage(namespace)
 
-	repo := New(&memoryStore)
+	repo := Repository{DB: &memoryStore}
 	repo.Append(es.Event{Payload: transaction})
 
 	events := memoryStore.Get()
@@ -27,13 +27,13 @@ func TesteAppendTransaction(t *testing.T) {
 func TestAppendConcurrent(t *testing.T) {
 	namespace := "fake_name"
 	memoryStore := ms.NewStorage(namespace)
-	Repository := New(&memoryStore)
+	repo := New(&memoryStore)
 
 	var wg sync.WaitGroup
 
 	wg.Add(100)
 	for i := 0; i < 100; i++ {
-		go appendAndMarkAsDone(&Repository, &wg)
+		go appendAndMarkAsDone(&repo, &wg)
 	}
 	wg.Wait()
 

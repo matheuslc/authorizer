@@ -18,17 +18,15 @@ type RepositoryInterface interface {
 	CurrentAccount() Account
 }
 
-// New returns a new instance of Repository
-func New(db *ms.MemoryStore) Repository {
-	return Repository{DB: db}
+// CreateAccount a new event into the EventStore
+func (ar *Repository) CreateAccount(event es.Event) {
+	ar.DB.Append(event)
 }
 
-// CreateAccount a new event into the EventStore
-func (ar *Repository) CreateAccount(ac Account) es.Event {
+// NewEvent
+func (ar *Repository) NewEvent(ac Account, eventType string, violations []string) es.Event {
 	time := time.Now()
-	event := es.Event{Timestamp: time, Name: AccountCreated, Payload: ac}
-
-	ar.DB.Append(event)
+	event := es.Event{Timestamp: time, Name: eventType, Payload: ac, Violations: violations}
 	return event
 }
 

@@ -10,12 +10,15 @@ type CreateUseCase struct {
 
 // Execute
 func (uc *CreateUseCase) Execute() es.Event {
-	// accountEvents := uc.AccountRepo.Iter()
+	accountEvents := uc.AccountRepo.Iter()
+	acViolation := Violations{AccountEvents: accountEvents, AccountIntent: uc.AccountIntent}
 
-	// acViolation := Violations{AccountEvents: accountEvents, AccountIntent: uc.AccountIntent}
+	violations := uc.runViolations(acViolation)
+	event := uc.AccountRepo.NewEvent(uc.AccountIntent, AccountCreated, violations)
 
-	// violations := uc.runViolations(acViolation)
-	event := uc.AccountRepo.CreateAccount(uc.AccountIntent)
+	if len(violations) == 0 {
+		uc.AccountRepo.CreateAccount(event)
+	}
 
 	return event
 }

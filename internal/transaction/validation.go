@@ -59,10 +59,8 @@ func DuplicatedTransaction(v Violations) (string, bool) {
 // its current transaction
 func AccountLimitViolation(v Violations) (string, bool) {
 	balance := v.Account.AvailableLimit
-	events := []es.Event{}
 
 	for _, event := range v.TransactionEvents {
-		events = append(events, event)
 		balance -= event.Payload.(Transaction).Amount
 	}
 
