@@ -1,4 +1,4 @@
-package transactionentity
+package transaction
 
 import (
 	ac "github.com/matheuslc/authorizer/internal/account"

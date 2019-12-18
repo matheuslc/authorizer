@@ -1,4 +1,4 @@
-package transactionentity
+package transaction
 
 import (
 	"time"
