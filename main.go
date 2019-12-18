@@ -33,7 +33,7 @@ func main() {
 		if json["transaction"] != nil {
 			event := tr.CommandHandler(json["transaction"], &accountStore, &transactionStore)
 
-			fmt.Println(tr.JSONPresenter(event))
+			fmt.Println(ac.JSONPresenter(event))
 		} else if json["account"] != nil {
 			event := ac.CommandHandler(json["account"], &accountStore)
 

@@ -61,7 +61,11 @@ func AccountLimitViolation(v Violations) (string, bool) {
 	balance := v.Account.AvailableLimit
 
 	for _, event := range v.TransactionEvents {
-		balance -= event.Payload.(Transaction).Amount
+		t := event.Payload.(Transaction)
+
+		if len(event.Violations) == 0 {
+			balance -= t.Amount
+		}
 	}
 
 	amount := v.TransactionIntent.Amount

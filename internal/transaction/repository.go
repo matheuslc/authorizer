@@ -14,22 +14,19 @@ type Repository struct {
 
 // RepositoryInterface
 type RepositoryInterface interface {
-	Append(t Transaction, v []string) es.Event
+	All() []es.Event
+	Append(t Transaction, v []string)
 	IterAfter(after time.Time) []es.Event
+	NewEvent(t Transaction, eventType string, violations []string) es.Event
 }
 
-// New returns a new instance of Repository
-func New(db *ms.MemoryStore) Repository {
-	return Repository{DB: db}
-}
-
-// NewEvent
-func (tr *Repository) NewEvent(t Transaction, evenType string, violations []string) es.Event {
+// NewEvent creates a new event
+func (tr *Repository) NewEvent(t Transaction, eventType string, violations []string) es.Event {
 	time := time.Now()
 
 	event := es.Event{
 		Timestamp:  time,
-		Name:       evenType,
+		Name:       eventType,
 		Payload:    t,
 		Violations: violations,
 	}
@@ -42,7 +39,7 @@ func (tr *Repository) Append(ev es.Event) {
 	tr.DB.Append(ev)
 }
 
-// All
+// All returns all transaction events
 func (tr *Repository) All() []es.Event {
 	data := tr.DB.Get()
 	return data
