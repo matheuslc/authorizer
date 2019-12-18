@@ -1,5 +1,6 @@
 package account
 
+// CreateUseCase
 type CreateUseCase struct {
 	accountRepo   Repository
 	accountIntent Account

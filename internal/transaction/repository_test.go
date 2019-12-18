@@ -17,7 +17,7 @@ func TesteAppendTransaction(t *testing.T) {
 	memoryStore := ms.NewStorage(namespace)
 
 	Repository := New(&memoryStore)
-	Repository.Append(transaction)
+	Repository.Append(transaction, []string{})
 
 	events := memoryStore.Get()
 
@@ -50,6 +50,6 @@ func appendAndMarkAsDone(tr *Repository, wg *sync.WaitGroup) {
 	uuid, _ := uuid.NewUUID()
 	transaction := Transaction{ID: uuid, Merchant: "Carmels Store", Amount: 10, time: time.Now()}
 
-	tr.Append(transaction)
+	tr.Append(transaction, []string{})
 	wg.Done()
 }

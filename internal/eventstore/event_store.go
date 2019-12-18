@@ -8,10 +8,11 @@ import (
 
 // Event defines an event wrapper. Its payload contains the specific event
 type Event struct {
-	ID        uuid.UUID
-	Timestamp time.Time
-	Name      string
-	Payload   interface{}
+	ID         uuid.UUID
+	Timestamp  time.Time
+	Name       string
+	Payload    interface{}
+	Violations []string
 }
 
 // EventStore interface defines what an EventStore needs
@@ -20,4 +21,10 @@ type EventStore interface {
 	Get() []Event
 	Iter() <-chan Event
 	NewStorage(namespace string) EventStore
+}
+
+// EventJSONPresenter
+type EventJSONPresenter struct {
+	Event
+	Violations []string
 }

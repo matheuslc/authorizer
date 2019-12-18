@@ -15,7 +15,7 @@ type Repository struct {
 
 // RepositoryInterface
 type RepositoryInterface interface {
-	Append(t Transaction) bool
+	Append(t Transaction, v []string) es.Event
 	IterAfter(after time.Time) []es.Event
 }
 
@@ -25,13 +25,26 @@ func New(db *ms.MemoryStore) Repository {
 }
 
 // Append a new event into the EventStore
-func (tr *Repository) Append(t Transaction) bool {
+func (tr *Repository) Append(t Transaction, v []string) es.Event {
 	uuid, _ := uuid.NewUUID()
 	time := time.Now()
-	event := es.Event{ID: uuid, Timestamp: time, Name: TransactionValidated, Payload: t}
+
+	event := es.Event{
+		ID:         uuid,
+		Timestamp:  time,
+		Name:       TransactionValidated,
+		Payload:    t,
+		Violations: v,
+	}
 
 	tr.DB.Append(event)
-	return true
+	return event
+}
+
+// All
+func (tr *Repository) All() []es.Event {
+	data := tr.DB.Get()
+	return data
 }
 
 // IterAfter iterates thogh events after a certain time

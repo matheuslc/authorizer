@@ -7,6 +7,39 @@ import (
 	"github.com/matheuslc/authorizer/internal/eventstore/memorystore"
 )
 
+func TestAuthorizeTransactionSuccess(t *testing.T) {
+	acStore := memorystore.NewStorage("account")
+	tStore := memorystore.NewStorage("transaction")
+
+	accountRepo := ac.Repository{DB: &acStore}
+	transactionRepo := Repository{DB: &tStore}
+
+	account := ac.Account{ActiveCard: true, AvailableLimit: 2000}
+
+	trDone := Transaction{Merchant: "nuevo-store", Amount: 1000}
+	trSuccess := Transaction{Merchant: "anonther-store", Amount: 700}
+
+	accountRepo.CreateAccount(account)
+	transactionRepo.Append(trDone, []string{})
+
+	useCase := AuthorizeUseCase{
+		accountRepo:       accountRepo,
+		transactionRepo:   transactionRepo,
+		transactionIntent: trSuccess,
+	}
+
+	event := useCase.Execute()
+	events := transactionRepo.All()
+
+	if len(event.Violations) > 0 {
+		t.Errorf("Expected no violations to be throwed. Instead, %v was throwed", len(event.Violations))
+	}
+
+	if len(events) < 2 {
+		t.Errorf("Expected 2 transactions in the event store")
+	}
+}
+
 func TestAuthorizeViolation(t *testing.T) {
 	acStore := memorystore.NewStorage("account")
 	tStore := memorystore.NewStorage("transaction")
@@ -20,7 +53,7 @@ func TestAuthorizeViolation(t *testing.T) {
 	trWithoutLimit := Transaction{Merchant: "anonther-store", Amount: 70}
 
 	accountRepo.CreateAccount(account)
-	transactionRepo.Append(trDone)
+	transactionRepo.Append(trDone, []string{})
 
 	useCase := AuthorizeUseCase{
 		accountRepo:       accountRepo,
@@ -28,14 +61,14 @@ func TestAuthorizeViolation(t *testing.T) {
 		transactionIntent: trWithoutLimit,
 	}
 
-	violations := useCase.Execute()
+	event := useCase.Execute()
 
-	if len(violations) != 1 {
-		t.Errorf("Expected just one violations and get %v", len(violations))
+	if len(event.Violations) != 1 {
+		t.Errorf("Expected just one violations and get %v", len(event.Violations))
 	}
 
-	if violations[0] != InsuficientLimit {
-		t.Errorf("Expected %v as violation. Get %v", InsuficientLimit, violations[0])
+	if event.Violations[0] != InsuficientLimit {
+		t.Errorf("Expected %v as violation. Get %v", InsuficientLimit, event.Violations[0])
 	}
 }
 
@@ -52,7 +85,7 @@ func TestDoubleTransactionViolationUseCase(t *testing.T) {
 	trDoubled := Transaction{Merchant: "nuevo-store", Amount: 150}
 
 	accountRepo.CreateAccount(account)
-	transactionRepo.Append(trDone)
+	transactionRepo.Append(trDone, []string{})
 
 	useCase := AuthorizeUseCase{
 		accountRepo:       accountRepo,
@@ -60,14 +93,13 @@ func TestDoubleTransactionViolationUseCase(t *testing.T) {
 		transactionIntent: trDoubled,
 	}
 
-	violations := useCase.Execute()
-
-	if len(violations) != 1 {
-		t.Errorf("Expected just one violations and get %v", len(violations))
+	event := useCase.Execute()
+	if len(event.Violations) != 1 {
+		t.Errorf("Expected just one violations and get %v", len(event.Violations))
 	}
 
-	if violations[0] != DoubledNotAllowed {
-		t.Errorf("Expected %v as violation. Get %v", DoubledNotAllowed, violations[0])
+	if event.Violations[0] != DoubledNotAllowed {
+		t.Errorf("Expected %v as violation. Get %v", DoubledNotAllowed, event.Violations[0])
 	}
 }
 
@@ -86,9 +118,9 @@ func TestMoreThanAllowedTransactionViolationUseCase(t *testing.T) {
 	trExceded := Transaction{Merchant: "intent-store", Amount: 150}
 
 	accountRepo.CreateAccount(account)
-	transactionRepo.Append(trNuevo)
-	transactionRepo.Append(trCarmel)
-	transactionRepo.Append(trNubank)
+	transactionRepo.Append(trNuevo, []string{})
+	transactionRepo.Append(trCarmel, []string{})
+	transactionRepo.Append(trNubank, []string{})
 
 	useCase := AuthorizeUseCase{
 		accountRepo:       accountRepo,
@@ -96,13 +128,13 @@ func TestMoreThanAllowedTransactionViolationUseCase(t *testing.T) {
 		transactionIntent: trExceded,
 	}
 
-	violations := useCase.Execute()
+	event := useCase.Execute()
 
-	if len(violations) != 1 {
-		t.Errorf("Expected just one violations and get %v", len(violations))
+	if len(event.Violations) != 1 {
+		t.Errorf("Expected just one violations and get %v", len(event.Violations))
 	}
 
-	if violations[0] != MoreThanAllowed {
-		t.Errorf("Expected %v as violation. Get %v", MoreThanAllowed, violations[0])
+	if event.Violations[0] != MoreThanAllowed {
+		t.Errorf("Expected %v as violation. Get %v", MoreThanAllowed, event.Violations[0])
 	}
 }

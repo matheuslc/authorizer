@@ -4,6 +4,7 @@ import (
 	"time"
 
 	ac "github.com/matheuslc/authorizer/internal/account"
+	es "github.com/matheuslc/authorizer/internal/eventstore"
 )
 
 // AuthorizeUseCase
@@ -14,7 +15,7 @@ type AuthorizeUseCase struct {
 }
 
 // Execute
-func (uc *AuthorizeUseCase) Execute() []string {
+func (uc *AuthorizeUseCase) Execute() es.Event {
 	account := uc.accountRepo.CurrentAccount()
 	transctionEvents := uc.transactionRepo.IterAfter(uc.pastDateToGetEvents())
 	accountEvents := uc.accountRepo.Iter()
@@ -23,7 +24,9 @@ func (uc *AuthorizeUseCase) Execute() []string {
 	trViolation := Violations{Account: account, TransactionEvents: transctionEvents, TransactionIntent: uc.transactionIntent}
 
 	violations := uc.runViolations(acViolation, trViolation)
-	return violations
+	event := uc.transactionRepo.Append(uc.transactionIntent, violations)
+
+	return event
 }
 
 func (uc *AuthorizeUseCase) runViolations(acViolation ac.Violations, trViolation Violations) []string {
