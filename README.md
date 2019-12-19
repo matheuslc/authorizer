@@ -15,7 +15,7 @@ Dentro do console do container, basta aplicar o stream do arquivo ao binário co
 * `./authorizer < operations`
 
 ### Dependências
-Nenhuma foi utilizado nesse projeto o/
+Nenhuma foi utilizada nesse projeto o/
 (não que libs sejam ruins, libs eu amo vocês)
 
 # Arquitetura e decisões
@@ -47,7 +47,7 @@ Em geral, a aplicação é Orientada a Objetos e usa alguns benefícios de progr
 Por ser funções puras e usar dados imutáveis que são passados como cópias, elas podem ser rodadas em paralelo e assim acelar as checagens (mas ficou por uma v2 devido ao tempo. DESCULPA :///).
 
 ## Por que Golang?
-Como tive experiências passadas com ela, utilizei para ganhar tempo. Rich Hickey que me perdoe, mas não sinto ainda segurança para criar uma aplicação com tempo determido em Clojure. (mas deu vontade)
+Não é a linguagem que mais tenho experiência, sendo elas JavaScript e Ruby. Porém, como tive experiências passadas com Golang, utilizei para ganhar tempo e aprender mais. Rich Hickey que me perdoe, mas não me senti seguro para criar uma aplicação com tempo fechado em Clojure. (mas deu vontade)
 
 ## Testes
 Os testes de Casos de Uso (Use Cases) são mais de integração e o restante mais unitários. Não foi coberto 100%, mas as funcionalidades base estão cobertas.
@@ -59,7 +59,11 @@ Os testes de Casos de Uso (Use Cases) são mais de integração e o restante mai
 * Estratégias para evitar percorrer todos os eventos sempre que precisar de um estado, como guardar a referência do último evento sumarizado ou outras estratégias.
 * Rodar a aplicação passando um stream de eventos fora do container Docker (hoje tem que ta dentro).
 * Melhoria nos comentários com maiores informações e exemplos de uso. Priorizei a funcionalidade x tempo.
-* E com certeza temos mais que ainda não vi :P
+* Com certeza tem mais coisas que ainda não vi ainda :P
+
+## Processo de criação
+* Desenhei mais ou menos como queria a arquitetura do projeto em um caderno, o que deu umas 3 folhas de rascunho depois de pensar em algumas versões.
+* Fiz uma POC simples para testar o storage em memória e ter mais
 
 No mais, é isso galera! Curti MUITO e aprendi MUITO, valeu!
 
