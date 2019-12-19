@@ -63,7 +63,10 @@ Os testes de Casos de Uso (Use Cases) são mais de integração e o restante mai
 
 ## Processo de criação
 * Desenhei mais ou menos como queria a arquitetura do projeto em um caderno, o que deu umas 3 folhas de rascunho depois de pensar em algumas versões.
-* Fiz uma POC simples para testar o storage em memória e ter mais
+* Fiz uma POC simples para testar o storage em memória e ter mais familiaridade com a linguagem
+* Quebrei o projeto em algumas tarefas para ter um guia e mais ou menos o tempo que ia levar
+* Não usei um fluxo de Kanban em si, mas fui dando check nas camadas de abstração que fui criando
+* E ai foi só codar
 
 No mais, é isso galera! Curti MUITO e aprendi MUITO, valeu!
 
