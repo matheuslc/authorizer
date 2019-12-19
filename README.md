@@ -12,7 +12,7 @@ Autorização de transações financeiras.
 
 Dentro do console do container, basta aplicar o stream do arquivo ao binário compilado.
 
-* authorizer < operations
+* `./authorizer < operations`
 
 ### Dependências
 Nenhuma foi utilizado nesse projeto o/
